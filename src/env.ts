@@ -11,6 +11,8 @@ export const env = createEnv({
     AWS_ENDPOINT_URL_S3: z.string(),
     AWS_ACCESS_KEY_ID: z.string(),
     AWS_SECRET_ACCESS_KEY: z.string(),
+    AWS_BUCKET_NAME: z.string(),
+    REPLICATE_API_KEY: z.string(),
   },
   client: {},
   runtimeEnv: {
@@ -22,5 +24,7 @@ export const env = createEnv({
     AWS_ENDPOINT_URL_S3: process.env.AWS_ENDPOINT_URL_S3,
     AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,
     AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,
+    AWS_BUCKET_NAME: process.env.AWS_BUCKET_NAME,
+    REPLICATE_API_KEY: process.env.REPLICATE_API_KEY,
   },
 });
