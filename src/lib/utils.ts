@@ -1,15 +1,14 @@
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
-export const protocol =
-  process.env.NODE_ENV === "production" ? "https" : "http";
+export const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
 
 const getDevDomains = (): string[] => {
   const devDomains = process.env.NEXT_PUBLIC_DEV_DOMAINS;
   if (devDomains) {
-    return devDomains.split(",").map(domain => domain.trim());
+    return devDomains.split(',').map((domain) => domain.trim());
   }
-  return ["localhost:3000", "bgeraser.me"];
+  return ['localhost:3000', 'bgeraser.me'];
 };
 
 export const devDomains = getDevDomains();

@@ -1,6 +1,6 @@
 export const metadata = {
-  title: "Docs Page",
-  description: "This is the documentation page for the application.",
+  title: 'Docs Page',
+  description: 'This is the documentation page for the application.',
 };
 
 export default function ConsolePage() {
