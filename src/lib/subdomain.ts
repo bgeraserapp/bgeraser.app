@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
-import { rootDomain, devDomains } from './utils';
+
+import { devDomains, rootDomain } from './utils';
 
 export function extractSubdomain(request: NextRequest): string | null {
   const url = request.url;

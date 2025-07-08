@@ -1,4 +1,5 @@
-import { NextResponse, NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+
 import { extractSubdomain } from './lib/subdomain';
 
 // This function can be marked `async` if using `await` inside

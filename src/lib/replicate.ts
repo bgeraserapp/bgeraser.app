@@ -1,5 +1,6 @@
-import { env } from '@/env';
 import Replicate from 'replicate';
+
+import { env } from '@/env';
 
 const replicateClient = new Replicate({
   auth: env.REPLICATE_API_KEY,
