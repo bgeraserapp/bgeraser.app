@@ -40,6 +40,12 @@ export function middleware(request: NextRequest) {
     }
   }
 
+  if (pathname === '/console' || pathname === '/docs') {
+    // If the path is /console or /docs, redirect to the main page
+    const mainUrl = new URL('/', request.url);
+    return NextResponse.redirect(mainUrl, responseHeader);
+  }
+
   return NextResponse.next(responseHeader);
 }
 

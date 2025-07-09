@@ -46,7 +46,7 @@ export async function requireAuth(redirectTo?: string) {
   return session;
 }
 
-export async function redirectIfAuthenticated(redirectTo: string = '/console') {
+export async function redirectIfAuthenticated(redirectTo: string = '/') {
   const session = await getServerSession();
 
   if (session) {

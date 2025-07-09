@@ -9,7 +9,7 @@ import { redirectIfAuthenticated } from '@/lib/auth-server';
 
 export default async function SignInPage() {
   // Redirect if already authenticated
-  await redirectIfAuthenticated('/console');
+  await redirectIfAuthenticated('/');
 
   return (
     <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-4">

@@ -55,19 +55,19 @@ export function UserNav() {
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
-            <Link href="/console/account" className="flex items-center">
+            <Link href="/account" className="flex items-center">
               <User className="mr-2 h-4 w-4" />
               <span>Account</span>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link href="/console/settings" className="flex items-center">
+            <Link href="/settings" className="flex items-center">
               <Settings className="mr-2 h-4 w-4" />
               <span>Settings</span>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link href="/console/billing" className="flex items-center">
+            <Link href="/billing" className="flex items-center">
               <CreditCard className="mr-2 h-4 w-4" />
               <span>Billing</span>
             </Link>
