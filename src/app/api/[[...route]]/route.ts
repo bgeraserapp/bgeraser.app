@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { handle } from 'hono/vercel';
 
+import betterAuthRoute from './routes/better-auth';
 import { bgRemoverRoute } from './routes/bg-remover';
 import { healthRoute } from './routes/health';
 
@@ -8,6 +9,7 @@ const app = new Hono().basePath('/api');
 
 app.route('/health', healthRoute);
 app.route('/models/bg-remover', bgRemoverRoute);
+app.route('/', betterAuthRoute);
 
 export const dynamic = 'force-dynamic';
 

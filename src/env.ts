@@ -4,6 +4,11 @@ import { z } from 'zod';
 export const env = createEnv({
   server: {
     NODE_ENV: z.enum(['development', 'test', 'production']),
+    AUTH_SECRET: z.string(),
+    AUTH_URL: z.string(),
+    MONGODB_URI: z.string(),
+    GOOGLE_CLIENT_ID: z.string(),
+    GOOGLE_CLIENT_SECRET: z.string(),
     RESEND_API_KEY: z.string().optional(),
     EMAIL_FROM: z.string().optional(),
     ADMIN_EMAIL: z.string().optional(),
@@ -14,9 +19,17 @@ export const env = createEnv({
     AWS_BUCKET_NAME: z.string(),
     REPLICATE_API_KEY: z.string(),
   },
-  client: {},
+  client: {
+    NEXT_PUBLIC_AUTH_URL: z.string(),
+  },
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
+    AUTH_SECRET: process.env.AUTH_SECRET,
+    AUTH_URL: process.env.AUTH_URL,
+    MONGODB_URI: process.env.MONGODB_URI,
+    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+    NEXT_PUBLIC_AUTH_URL: process.env.NEXT_PUBLIC_AUTH_URL,
     RESEND_API_KEY: process.env.RESEND_API_KEY,
     EMAIL_FROM: process.env.EMAIL_FROM,
     ADMIN_EMAIL: process.env.ADMIN_EMAIL,
