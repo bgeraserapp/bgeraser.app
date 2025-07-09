@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/use-auth';
 
 export default function ConsolePage() {
-  const { user, logout, isLoading } = useAuth();
+  const { user, signOut, isLoading } = useAuth();
 
   return (
     <div className="flex flex-col items-center justify-center h-screen">
@@ -14,7 +14,7 @@ export default function ConsolePage() {
       {user && (
         <div className="flex items-center gap-4 flex-col">
           <div>Welcome, {user.name || user.email}</div>
-          <Button onClick={() => logout()}>Sign Out</Button>
+          <Button onClick={() => signOut.mutate()}>Sign Out</Button>
         </div>
       )}
     </div>

@@ -18,11 +18,25 @@ export const auth = betterAuth({
       clientId: env.GOOGLE_CLIENT_ID,
       clientSecret: env.GOOGLE_CLIENT_SECRET,
     },
+    github: {
+      clientId: env.GITHUB_CLIENT_ID,
+      clientSecret: env.GITHUB_CLIENT_SECRET,
+    },
+    microsoft: {
+      clientId: env.MICROSOFT_CLIENT_ID,
+      clientSecret: env.MICROSOFT_CLIENT_SECRET,
+    },
+  },
+  account: {
+    accountLinking: {
+      enabled: true,
+      allowDifferentEmails: true,
+      trustedProviders: ['google', 'github', 'microsoft'],
+    },
   },
   baseURL: env.AUTH_URL,
   secret: env.AUTH_SECRET,
 });
 
-export type AuthSession = typeof auth.$Infer.Session;
-export type Session = typeof auth.$Infer.Session.session;
+export type Session = typeof auth.$Infer.Session;
 export type User = typeof auth.$Infer.Session.user;

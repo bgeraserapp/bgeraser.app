@@ -1,7 +1,4 @@
-import { redirect, RedirectType } from 'next/navigation';
-
-import { authSession } from '@/actions/session';
-import { AuthProvider } from '@/context/auth-context';
+import { requireAuth } from '@/lib/auth-server';
 
 export const metadata = {
   title: 'Console Page',
@@ -9,10 +6,6 @@ export const metadata = {
 };
 
 export default async function ConsoleLayout({ children }: { children: React.ReactNode }) {
-  const session = await authSession();
-  if (!session) {
-    redirect('/sign-in', RedirectType.replace);
-    return null; // Ensure the function returns null after redirecting
-  }
-  return <AuthProvider>{children}</AuthProvider>;
+  await requireAuth('/sign-in');
+  return <>{children}</>;
 }

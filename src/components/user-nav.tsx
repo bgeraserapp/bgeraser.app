@@ -14,12 +14,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth } from '@/providers/auth-provider';
 
 export function UserNav() {
-  const { user, logout } = useAuth();
-  if (!user) {
-    return null; // Optionally handle unauthenticated state
+  const { user, signOut, isAuthenticated } = useAuth();
+
+  if (!isAuthenticated || !user) {
+    return null;
   }
 
   return (
@@ -54,26 +55,26 @@ export function UserNav() {
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
-            <Link href="/account" className="flex items-center">
+            <Link href="/console/account" className="flex items-center">
               <User className="mr-2 h-4 w-4" />
               <span>Account</span>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link href="/settings" className="flex items-center">
+            <Link href="/console/settings" className="flex items-center">
               <Settings className="mr-2 h-4 w-4" />
               <span>Settings</span>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link href="/billing" className="flex items-center">
+            <Link href="/console/billing" className="flex items-center">
               <CreditCard className="mr-2 h-4 w-4" />
               <span>Billing</span>
             </Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => logout()} className="flex items-center">
+        <DropdownMenuItem onClick={() => signOut.mutate()} className="flex items-center">
           <LogOut className="mr-2 h-4 w-4" />
           <span>Logout</span>
         </DropdownMenuItem>

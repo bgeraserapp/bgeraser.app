@@ -1,11 +1,6 @@
-import { redirect, RedirectType } from 'next/navigation';
-
-import { authSession } from '@/actions/session';
+import { redirectIfAuthenticated } from '@/lib/auth-server';
 
 export async function AuthLayout({ children }: { children: React.ReactNode }) {
-  const session = await authSession();
-  if (session) {
-    return redirect('/', RedirectType.replace);
-  }
+  await redirectIfAuthenticated('/');
   return <>{children}</>;
 }

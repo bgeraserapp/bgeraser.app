@@ -6,9 +6,14 @@ export const env = createEnv({
     NODE_ENV: z.enum(['development', 'test', 'production']),
     AUTH_SECRET: z.string(),
     AUTH_URL: z.string(),
+
     MONGODB_URI: z.string(),
     GOOGLE_CLIENT_ID: z.string(),
     GOOGLE_CLIENT_SECRET: z.string(),
+    MICROSOFT_CLIENT_ID: z.string(),
+    MICROSOFT_CLIENT_SECRET: z.string(),
+    GITHUB_CLIENT_ID: z.string(),
+    GITHUB_CLIENT_SECRET: z.string(),
     RESEND_API_KEY: z.string().optional(),
     EMAIL_FROM: z.string().optional(),
     ADMIN_EMAIL: z.string().optional(),
@@ -21,6 +26,7 @@ export const env = createEnv({
   },
   client: {
     NEXT_PUBLIC_AUTH_URL: z.string(),
+    NEXT_PUBLIC_HOME_URL: z.string(),
   },
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
@@ -29,6 +35,10 @@ export const env = createEnv({
     MONGODB_URI: process.env.MONGODB_URI,
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+    MICROSOFT_CLIENT_ID: process.env.MICROSOFT_CLIENT_ID,
+    MICROSOFT_CLIENT_SECRET: process.env.MICROSOFT_CLIENT_SECRET,
+    GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
+    GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET,
     NEXT_PUBLIC_AUTH_URL: process.env.NEXT_PUBLIC_AUTH_URL,
     RESEND_API_KEY: process.env.RESEND_API_KEY,
     EMAIL_FROM: process.env.EMAIL_FROM,
@@ -39,5 +49,6 @@ export const env = createEnv({
     AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,
     AWS_BUCKET_NAME: process.env.AWS_BUCKET_NAME,
     REPLICATE_API_KEY: process.env.REPLICATE_API_KEY,
+    NEXT_PUBLIC_HOME_URL: process.env.NEXT_PUBLIC_HOME_URL,
   },
 });
