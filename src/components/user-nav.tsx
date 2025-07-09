@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronDown, CreditCard, LogOut, Settings, User } from 'lucide-react';
+import { ChevronDown, CreditCard, History, LogOut, User } from 'lucide-react';
 import Link from 'next/link';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -61,9 +61,9 @@ export function UserNav() {
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link href="/settings" className="flex items-center">
-              <Settings className="mr-2 h-4 w-4" />
-              <span>Settings</span>
+            <Link href="/history" className="flex items-center">
+              <History className="mr-2 h-4 w-4" />
+              <span>History</span>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>

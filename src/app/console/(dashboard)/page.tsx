@@ -1,6 +1,8 @@
 'use client';
 
+import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
+import { UserNav } from '@/components/user-nav';
 import { useAuth } from '@/hooks/use-auth';
 
 export default function ConsolePage() {
@@ -14,6 +16,8 @@ export default function ConsolePage() {
         <div className="flex items-center gap-4 flex-col">
           <div>Welcome, {user.name || user.email}</div>
           <Button onClick={() => signOut.mutate()}>Sign Out</Button>
+          <ThemeToggle />
+          <UserNav />
         </div>
       )}
     </div>
