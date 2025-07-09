@@ -1,4 +1,5 @@
-import { ArrowLeft, Mail } from 'lucide-react';
+import { IconScreenshot } from '@tabler/icons-react';
+import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
 import { SignInForm } from '@/components/auth/sign-in-form';
@@ -27,9 +28,9 @@ export default async function SignInPage() {
         <Card className="shadow-xl border-0">
           <CardHeader className="text-center">
             <div className="flex items-center justify-center mb-4">
-              <Mail className="h-8 w-8 text-primary" />
+              <IconScreenshot className="h-12 w-12 text-primary" />
             </div>
-            <CardTitle className="text-2xl">Welcome to {AppConfig.name}</CardTitle>
+            <CardTitle className="text-2xl text-primary">Welcome to {AppConfig.name}</CardTitle>
             <CardDescription>Sign in to your account</CardDescription>
           </CardHeader>
           <CardContent>
