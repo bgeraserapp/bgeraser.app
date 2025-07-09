@@ -1,96 +1,58 @@
-import { GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { NextRequest, NextResponse } from 'next/server';
-import { v4 as uuidv4 } from 'uuid';
 
-import { env } from '@/env';
-import replicateClient, { Models } from '@/lib/replicate';
-import { createS3Client } from '@/lib/s3-client';
+import {
+  extractImagesFromFormData,
+  extractImagesFromJson,
+  JsonPayload,
+  validateImageInput,
+} from '@/lib/image-utils';
+import { processMultipleImagesWithReplicate } from '@/lib/replicate-utils';
+import { uploadMultipleImagesToS3 } from '@/lib/s3-utils';
 
 export async function POST(request: NextRequest) {
   try {
-    const formData = await request.formData();
-    const file = formData.get('image') as File;
+    const contentType = request.headers.get('content-type') || '';
+    const isFormData = contentType.includes('multipart/form-data');
+    const isJson = contentType.includes('application/json');
 
-    if (!file) {
-      return NextResponse.json({ error: 'No image file provided' }, { status: 400 });
+    let images;
+
+    if (isFormData) {
+      const formData = await request.formData();
+      images = await extractImagesFromFormData(formData);
+    } else if (isJson) {
+      const jsonData: JsonPayload = await request.json();
+      images = extractImagesFromJson(jsonData);
+    } else {
+      return NextResponse.json(
+        {
+          error: 'Unsupported content type. Use multipart/form-data or application/json',
+        },
+        { status: 400 }
+      );
     }
 
-    if (!file.type.startsWith('image/')) {
-      return NextResponse.json({ error: 'File must be an image' }, { status: 400 });
+    validateImageInput(images);
+
+    const uploadResults = await uploadMultipleImagesToS3(images);
+    const processedResults = await processMultipleImagesWithReplicate(uploadResults);
+
+    if (processedResults.length === 1) {
+      return NextResponse.json({
+        success: true,
+        ...processedResults[0],
+      });
     }
-
-    const s3Client = createS3Client();
-    const imageId = uuidv4();
-    const originalKey = `uploads/${imageId}-original.${file.name.split('.').pop()}`;
-    const processedKey = `processed/${imageId}-processed.png`;
-
-    const fileBuffer = await file.arrayBuffer();
-    const uploadCommand = new PutObjectCommand({
-      Bucket: env.AWS_BUCKET_NAME,
-      Key: originalKey,
-      Body: new Uint8Array(fileBuffer),
-      ContentType: file.type,
-    });
-
-    await s3Client.send(uploadCommand);
-
-    const presignedUrl = await getSignedUrl(
-      s3Client,
-      new GetObjectCommand({
-        Bucket: env.AWS_BUCKET_NAME,
-        Key: originalKey,
-      }),
-      { expiresIn: 3600 }
-    );
-
-    const prediction = await replicateClient.run(Models.BACKGROUND_REMOVER, {
-      input: {
-        image: presignedUrl,
-      },
-    });
-
-    if (!prediction) {
-      return NextResponse.json({ error: 'Failed to process image' }, { status: 500 });
-    }
-
-    const processedImageUrl = prediction as unknown as string;
-    const processedImageResponse = await fetch(processedImageUrl);
-
-    if (!processedImageResponse.ok) {
-      return NextResponse.json({ error: 'Failed to download processed image' }, { status: 500 });
-    }
-
-    const processedImageBuffer = await processedImageResponse.arrayBuffer();
-    const processedUploadCommand = new PutObjectCommand({
-      Bucket: env.AWS_BUCKET_NAME,
-      Key: processedKey,
-      Body: new Uint8Array(processedImageBuffer),
-      ContentType: 'image/png',
-    });
-
-    await s3Client.send(processedUploadCommand);
-
-    const processedPresignedUrl = await getSignedUrl(
-      s3Client,
-      new GetObjectCommand({
-        Bucket: env.AWS_BUCKET_NAME,
-        Key: processedKey,
-      }),
-      { expiresIn: 3600 }
-    );
 
     return NextResponse.json({
       success: true,
-      originalUrl: presignedUrl,
-      processedUrl: processedPresignedUrl,
-      imageId,
+      results: processedResults,
+      count: processedResults.length,
     });
   } catch (error) {
     console.error('Background removal error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error during background removal' },
-      { status: 500 }
-    );
+    const errorMessage =
+      error instanceof Error ? error.message : 'Internal server error during background removal';
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
