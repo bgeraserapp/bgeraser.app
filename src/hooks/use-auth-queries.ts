@@ -1,6 +1,7 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
 import { authClient } from '@/lib/auth-client';
@@ -91,14 +92,15 @@ export function useSignInMutation() {
 // Sign Out Mutation
 export function useSignOutMutation() {
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   return useMutation({
     mutationFn: async () => {
       return await authClient.signOut();
     },
     onSuccess: () => {
-      // Clear all auth-related queries
       queryClient.clear();
+      router.refresh();
       toast.success('Successfully signed out!');
     },
     onError: (error) => {
