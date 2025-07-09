@@ -6,7 +6,6 @@ export const env = createEnv({
     NODE_ENV: z.enum(['development', 'test', 'production']),
     AUTH_SECRET: z.string(),
     AUTH_URL: z.string(),
-
     MONGODB_URI: z.string(),
     GOOGLE_CLIENT_ID: z.string(),
     GOOGLE_CLIENT_SECRET: z.string(),
@@ -27,6 +26,8 @@ export const env = createEnv({
   client: {
     NEXT_PUBLIC_AUTH_URL: z.string(),
     NEXT_PUBLIC_HOME_URL: z.string(),
+    NEXT_PUBLIC_PORTAL_URL: z.string(),
+    NEXT_PUBLIC_DOCS_URL: z.string(),
   },
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
@@ -50,5 +51,7 @@ export const env = createEnv({
     AWS_BUCKET_NAME: process.env.AWS_BUCKET_NAME,
     REPLICATE_API_KEY: process.env.REPLICATE_API_KEY,
     NEXT_PUBLIC_HOME_URL: process.env.NEXT_PUBLIC_HOME_URL,
+    NEXT_PUBLIC_PORTAL_URL: process.env.NEXT_PUBLIC_PORTAL_URL,
+    NEXT_PUBLIC_DOCS_URL: process.env.NEXT_PUBLIC_DOCS_URL,
   },
 });
