@@ -1,3 +1,4 @@
+import DashboardHeader from '@/components/layout/header';
 import LoadingWrapper from '@/components/layout/loading';
 import { requireAuth } from '@/lib/auth-server';
 
@@ -8,5 +9,10 @@ export const metadata = {
 
 export default async function ConsoleLayout({ children }: { children: React.ReactNode }) {
   await requireAuth('/sign-in');
-  return <LoadingWrapper>{children}</LoadingWrapper>;
+  return (
+    <LoadingWrapper>
+      <DashboardHeader />
+      {children}
+    </LoadingWrapper>
+  );
 }
