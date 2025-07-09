@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { Hono } from 'hono';
 
 import {
   extractImagesFromFormData,
@@ -9,26 +9,29 @@ import {
 import { processMultipleImagesWithReplicate } from '@/lib/replicate-utils';
 import { uploadMultipleImagesToS3 } from '@/lib/s3-utils';
 
-export async function POST(request: NextRequest) {
+const app = new Hono();
+
+app.post('/', async (c) => {
   try {
-    const contentType = request.headers.get('content-type') || '';
+    const contentType = c.req.header('content-type') || '';
     const isFormData = contentType.includes('multipart/form-data');
     const isJson = contentType.includes('application/json');
 
     let images;
+    const startTime = performance.now();
 
     if (isFormData) {
-      const formData = await request.formData();
+      const formData = await c.req.formData();
       images = await extractImagesFromFormData(formData);
     } else if (isJson) {
-      const jsonData: JsonPayload = await request.json();
+      const jsonData: JsonPayload = await c.req.json();
       images = extractImagesFromJson(jsonData);
     } else {
-      return NextResponse.json(
+      return c.json(
         {
           error: 'Unsupported content type. Use multipart/form-data or application/json',
         },
-        { status: 400 }
+        400
       );
     }
 
@@ -37,22 +40,22 @@ export async function POST(request: NextRequest) {
     const uploadResults = await uploadMultipleImagesToS3(images);
     const processedResults = await processMultipleImagesWithReplicate(uploadResults);
 
-    if (processedResults.length === 1) {
-      return NextResponse.json({
-        success: true,
-        ...processedResults[0],
-      });
-    }
+    const endTime = performance.now();
+    const processingTime = endTime - startTime;
+    const count = processedResults.length;
 
-    return NextResponse.json({
+    return c.json({
       success: true,
-      results: processedResults,
-      count: processedResults.length,
+      processingTime,
+      count,
+      results: processedResults.length === 1 ? processedResults[0] : processedResults,
     });
   } catch (error) {
     console.error('Background removal error:', error);
     const errorMessage =
       error instanceof Error ? error.message : 'Internal server error during background removal';
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    return c.json({ error: errorMessage }, 500);
   }
-}
+});
+
+export { app as bgRemoverRoute };
