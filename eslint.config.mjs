@@ -36,6 +36,7 @@ const eslintConfig = [
       'simple-import-sort/exports': 'error',
       'prettier/prettier': ['error', {}, { usePrettierrc: true }],
     },
+    ignores: ['.next', 'node_modules'],
   },
 ];
 

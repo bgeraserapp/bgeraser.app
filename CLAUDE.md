@@ -49,8 +49,8 @@ Uses `@t3-oss/env-nextjs` for type-safe environment variables:
 
 ### Subdomain Routing
 
-- **console.domain.com**: Routes to `/console` page
-- **docs.domain.com**: Routes to `/docs` page
+- **console.domain.com**: Routes to `/` page
+- **docs.domain.com**: Routes to `/` page
 - Main domain serves the primary application
 
 ### State Management

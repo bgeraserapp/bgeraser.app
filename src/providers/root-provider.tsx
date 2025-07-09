@@ -4,6 +4,7 @@ import { NuqsAdapter } from 'nuqs/adapters/next/app';
 
 import ReactQueryProvider from './_react-query-provider';
 import { ThemeProvider } from './_theme-provider';
+import { AuthProvider } from './auth-provider';
 interface RootProviderProps {
   children: React.ReactNode;
 }
@@ -20,7 +21,7 @@ export default async function RootProvider({ children }: RootProviderProps) {
             enableSystem
             disableTransitionOnChange
           >
-            {children}
+            <AuthProvider>{children}</AuthProvider>
           </ThemeProvider>
         </NuqsAdapter>
       </ReactQueryProvider>
