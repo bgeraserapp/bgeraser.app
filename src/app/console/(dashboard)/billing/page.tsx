@@ -1,7 +1,28 @@
+import { CreditCardIcon } from 'lucide-react';
+
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+
 export default function BillingPage() {
   return (
-    <div>
-      <h1>Billing Settings</h1>
+    <div className="container mx-auto p-6 max-w-4xl">
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <CreditCardIcon className="mr-2 h-5 w-5" />
+              Billing Information
+            </CardTitle>
+            <CardDescription>
+              Manage your billing details, payment methods, and subscription plans.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground">
+              This section is under construction. Please check back later for updates.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
