@@ -37,7 +37,16 @@ export function FileUpload({ files, onFilesChange, multipleMode, onReset }: File
       }));
 
       if (multipleMode) {
-        onFilesChange([...files, ...uploadedFiles]);
+        // Limit to 10 images total
+        const newFiles = [...files, ...uploadedFiles];
+        const limitedFiles = newFiles.slice(0, 10);
+
+        // Clean up URLs for files that exceed the limit
+        if (newFiles.length > 10) {
+          newFiles.slice(10).forEach((f) => URL.revokeObjectURL(f.preview));
+        }
+
+        onFilesChange(limitedFiles);
       } else {
         if (files.length > 0) {
           files.forEach((f) => URL.revokeObjectURL(f.preview));
@@ -101,10 +110,13 @@ export function FileUpload({ files, onFilesChange, multipleMode, onReset }: File
               <p className="text-sm text-muted-foreground">
                 {files.length} image{files.length > 1 ? 's' : ''} selected
               </p>
-              {multipleMode && (
+              {multipleMode && files.length < 10 && (
                 <Button variant="outline" size="sm" onClick={open}>
                   Add More Images
                 </Button>
+              )}
+              {multipleMode && files.length >= 10 && (
+                <p className="text-xs text-muted-foreground">Maximum 10 images allowed</p>
               )}
             </div>
           )}

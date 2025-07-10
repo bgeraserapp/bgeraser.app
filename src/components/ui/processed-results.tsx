@@ -1,8 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
 'use client';
 
-import { Download, Image as ImageIcon, RefreshCw } from 'lucide-react';
-import { useCallback } from 'react';
+import { Archive, Download, Image as ImageIcon, RefreshCw } from 'lucide-react';
+import { useCallback, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,6 +21,8 @@ interface ProcessedResultsProps {
 }
 
 export function ProcessedResults({ processedImages, multipleMode }: ProcessedResultsProps) {
+  const [isDownloadingZip, setIsDownloadingZip] = useState(false);
+
   const downloadImage = useCallback((url: string, filename: string) => {
     const link = document.createElement('a');
     link.href = url;
@@ -29,6 +31,43 @@ export function ProcessedResults({ processedImages, multipleMode }: ProcessedRes
     link.click();
     document.body.removeChild(link);
   }, []);
+
+  const downloadAllAsZip = useCallback(async () => {
+    if (processedImages.length === 0) return;
+
+    setIsDownloadingZip(true);
+    try {
+      const urls = processedImages.map((img) => img.processedUrl);
+
+      const response = await fetch('/api/download-zip', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ urls }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to download zip');
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'bg-removed-images.zip';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading zip:', error);
+    } finally {
+      setIsDownloadingZip(false);
+    }
+  }, [processedImages]);
 
   if (processedImages.length === 0) {
     return null;
@@ -44,6 +83,20 @@ export function ProcessedResults({ processedImages, multipleMode }: ProcessedRes
         </CardDescription>
       </CardHeader>
       <CardContent>
+        {multipleMode && processedImages.length > 1 && (
+          <div className="mb-6 flex justify-end">
+            <Button
+              variant="outline"
+              onClick={downloadAllAsZip}
+              disabled={isDownloadingZip}
+              className="gap-2"
+            >
+              <Archive className="h-4 w-4" />
+              {isDownloadingZip ? 'Creating ZIP...' : 'Download All as ZIP'}
+            </Button>
+          </div>
+        )}
+
         <div className={cn(multipleMode ? 'space-y-6' : 'space-y-4')}>
           {processedImages.map((result, index) => (
             <div key={index} className="space-y-4">
