@@ -9,13 +9,13 @@ import { env } from '@/env';
 
 export function Hero() {
   return (
-    <section className="relative py-20 lg:py-32 overflow-hidden">
+    <section className="relative py-10 lg:py-10 overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5" />
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
         <div className="text-center max-w-4xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-6">
-            <Sparkles className="h-4 w-4" />
+          <div className="inline-flex items-center gap-2 bg-primary/10 text-primary-foreground px-4 py-2 rounded-full text-sm font-medium mb-6 border border-primary animate-pulse">
+            <Sparkles className="h-4 w-4 animate-spin" />
             AI-Powered Background Removal
           </div>
 
@@ -123,24 +123,6 @@ export function Hero() {
               </div>
             </div>
           </Card>
-        </div>
-
-        {/* Stats */}
-        <div className="mt-16 text-center">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 max-w-2xl mx-auto">
-            <div>
-              <div className="text-3xl font-bold text-primary">1M+</div>
-              <div className="text-sm text-muted-foreground">Images Processed</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-primary">&lt;3s</div>
-              <div className="text-sm text-muted-foreground">Processing Time</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-primary">99.9%</div>
-              <div className="text-sm text-muted-foreground">Accuracy Rate</div>
-            </div>
-          </div>
         </div>
       </div>
     </section>

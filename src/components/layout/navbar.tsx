@@ -12,7 +12,7 @@ export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <nav className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center">
@@ -28,19 +28,19 @@ export function Navbar() {
             <div className="ml-10 flex items-baseline space-x-4">
               <Link
                 href="#features"
-                className="text-muted-foreground hover:text-foreground px-3 py-2 text-sm font-medium transition-colors"
+                className="text-foreground hover:text-foreground px-3 py-2 text-sm font-medium transition-colors"
               >
                 Features
               </Link>
               <Link
                 href="#pricing"
-                className="text-muted-foreground hover:text-foreground px-3 py-2 text-sm font-medium transition-colors"
+                className="text-foreground hover:text-foreground px-3 py-2 text-sm font-medium transition-colors"
               >
                 Pricing
               </Link>
               <Link
                 href={env.NEXT_PUBLIC_DOCS_URL}
-                className="text-muted-foreground hover:text-foreground px-3 py-2 text-sm font-medium transition-colors"
+                className="text-foreground hover:text-foreground px-3 py-2 text-sm font-medium transition-colors"
               >
                 Docs
               </Link>
