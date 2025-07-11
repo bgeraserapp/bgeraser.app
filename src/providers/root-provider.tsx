@@ -1,3 +1,4 @@
+import { headers } from 'next/headers';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
@@ -11,17 +12,23 @@ interface RootProviderProps {
 
 export default async function RootProvider({ children }: RootProviderProps) {
   const messages = await getMessages();
+  const headerList = await headers();
+  const domain = headerList.get('x-current-domain');
   return (
     <NextIntlClientProvider messages={messages}>
       <ReactQueryProvider>
         <NuqsAdapter>
           <ThemeProvider
             attribute="class"
-            defaultTheme="dark"
+            defaultTheme="light"
             enableSystem
             disableTransitionOnChange
           >
-            <AuthProvider>{children}</AuthProvider>
+            {!['console', 'docs'].includes(domain || '') ? (
+              <>{children}</>
+            ) : (
+              <AuthProvider>{children}</AuthProvider>
+            )}
           </ThemeProvider>
         </NuqsAdapter>
       </ReactQueryProvider>
