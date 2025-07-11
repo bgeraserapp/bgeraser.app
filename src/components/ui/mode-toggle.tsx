@@ -15,14 +15,14 @@ export function ModeToggle({ multipleMode, onToggleMode }: ModeToggleProps) {
       <div className="flex items-center gap-4">
         <Button
           variant={!multipleMode ? 'default' : 'outline'}
-          size="sm"
+          size="lg"
           onClick={() => !multipleMode || onToggleMode()}
         >
           Single Image
         </Button>
         <Button
           variant={multipleMode ? 'default' : 'outline'}
-          size="sm"
+          size="lg"
           onClick={() => multipleMode || onToggleMode()}
         >
           <Plus className="h-4 w-4 mr-2" />
