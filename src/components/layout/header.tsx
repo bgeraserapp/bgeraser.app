@@ -1,12 +1,16 @@
+import { Zap } from 'lucide-react';
 import Link from 'next/link';
 
+import { authSession } from '@/actions/session';
 import { env } from '@/env';
 import { cn } from '@/lib/utils';
 
 import { ThemeToggle } from '../theme-toggle';
 import { UserNav } from '../user-nav';
 
-function DashboardHeader() {
+async function DashboardHeader() {
+  const session = await authSession();
+  const credits = session?.user?.credits || 0;
   return (
     <header
       className={cn(
@@ -32,7 +36,11 @@ function DashboardHeader() {
           </div>
           <h1 className="text-2xl font-bold text-foreground">Background Remover</h1>
         </Link>
-        <div className="flex items-center space-x-1">
+        <div className="flex items-center space-x-3">
+          <div className="flex items-center gap-2 bg-primary/10 text-primary px-3 py-1.5 rounded-full text-sm font-medium">
+            <Zap className="w-4 h-4" />
+            <span>{credits} Credits</span>
+          </div>
           <ThemeToggle />
           <UserNav />
         </div>

@@ -6,22 +6,17 @@ import { useEffect, useState } from 'react';
 import { env } from '@/env';
 
 import { CreditManagement } from './credit-management';
-import { CreditPacks } from './credit-packs';
+import { CreditPlansDialog } from './credit-plans-dialog';
 
 interface BillingClientProps {
   currentCredits?: number;
-  usedCredits?: number;
-  totalCreditsUsed?: number;
 }
 
-export function BillingClient({
-  currentCredits = 120,
-  usedCredits = 80,
-  totalCreditsUsed = 280,
-}: BillingClientProps) {
+export function BillingClient({ currentCredits = 0 }: BillingClientProps) {
   const [paddle, setPaddle] = useState<Paddle>();
   const [isLoading, setIsLoading] = useState(false);
   const [selectedPack, setSelectedPack] = useState<string | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
     initializePaddle({
@@ -49,6 +44,7 @@ export function BillingClient({
       });
 
       const data = await response.json();
+      setIsDialogOpen(false);
 
       paddle.Checkout.open({
         transactionId: data.transaction.id,
@@ -66,36 +62,21 @@ export function BillingClient({
     }
   };
 
-  const handleUpgradeClick = () => {
-    document.getElementById('credit-packs')?.scrollIntoView({ behavior: 'smooth' });
+  const handleBuyCreditClick = () => {
+    setIsDialogOpen(true);
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-3 space-y-4">
-      <style jsx>{`
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.6s ease-out forwards;
-        }
-      `}</style>
+    <div className="max-w-6xl mx-auto p-6">
+      <CreditManagement currentCredits={currentCredits} onBuyCreditClick={handleBuyCreditClick} />
 
-      <CreditManagement
-        currentCredits={currentCredits}
-        usedCredits={usedCredits}
-        totalCreditsUsed={totalCreditsUsed}
-        onUpgradeClick={handleUpgradeClick}
+      <CreditPlansDialog
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        onPurchase={handleCheckout}
+        isLoading={isLoading}
+        selectedPack={selectedPack}
       />
-
-      <CreditPacks onPurchase={handleCheckout} isLoading={isLoading} selectedPack={selectedPack} />
     </div>
   );
 }
