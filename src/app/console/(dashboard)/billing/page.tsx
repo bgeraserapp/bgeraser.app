@@ -1,5 +1,6 @@
 import { CreditCardIcon } from 'lucide-react';
 
+import { AddCreditComponent } from '@/components/billings/add-credit';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function BillingPage() {
@@ -17,9 +18,7 @@ export default function BillingPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground">
-              This section is under construction. Please check back later for updates.
-            </p>
+            <AddCreditComponent />
           </CardContent>
         </Card>
       </div>

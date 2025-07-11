@@ -22,12 +22,16 @@ export const env = createEnv({
     AWS_SECRET_ACCESS_KEY: z.string(),
     AWS_BUCKET_NAME: z.string(),
     REPLICATE_API_KEY: z.string(),
+    PADDLE_SECRET_TOKEN: z.string(),
+    PADDLE_WEBHOOK_SECRET: z.string(),
+    PADDLE_ENV: z.string(),
   },
   client: {
     NEXT_PUBLIC_AUTH_URL: z.string(),
     NEXT_PUBLIC_HOME_URL: z.string(),
     NEXT_PUBLIC_PORTAL_URL: z.string(),
     NEXT_PUBLIC_DOCS_URL: z.string(),
+    NEXT_PUBLIC_PADDLE_CLIENT_TOKEN: z.string(),
   },
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
@@ -53,5 +57,9 @@ export const env = createEnv({
     NEXT_PUBLIC_HOME_URL: process.env.NEXT_PUBLIC_HOME_URL,
     NEXT_PUBLIC_PORTAL_URL: process.env.NEXT_PUBLIC_PORTAL_URL,
     NEXT_PUBLIC_DOCS_URL: process.env.NEXT_PUBLIC_DOCS_URL,
+    NEXT_PUBLIC_PADDLE_CLIENT_TOKEN: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN,
+    PADDLE_SECRET_TOKEN: process.env.PADDLE_SECRET_TOKEN,
+    PADDLE_WEBHOOK_SECRET: process.env.PADDLE_WEBHOOK_SECRET,
+    PADDLE_ENV: process.env.PADDLE_ENV,
   },
 });
