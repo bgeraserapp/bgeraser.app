@@ -70,18 +70,6 @@ export function BillingClient({
     document.getElementById('credit-packs')?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const handleAddCard = () => {
-    console.log('Add card functionality to be implemented');
-  };
-
-  const handleSetDefaultCard = (cardId: string) => {
-    console.log('Set default card:', cardId);
-  };
-
-  const handleDeleteCard = (cardId: string) => {
-    console.log('Delete card:', cardId);
-  };
-
   return (
     <div className="max-w-6xl mx-auto p-3 space-y-4">
       <style jsx>{`
