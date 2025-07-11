@@ -1,10 +1,22 @@
 import { EventName } from '@paddle/paddle-node-sdk';
 import { Hono } from 'hono';
 
+import { connectDB } from '@/db';
+import { User } from '@/db/models/user';
 import { env } from '@/env';
 import paddle from '@/lib/paddle';
 
 const app = new Hono();
+
+const updateUserToAddCredits = async (paddleCustomerId: string, credits: number) => {
+  await connectDB();
+  await User.findOneAndUpdate(
+    { paddleCustomerId },
+    {
+      $inc: { credits },
+    }
+  );
+};
 
 app.post('/paddle', async (c) => {
   // Handle the webhook logic here
@@ -22,6 +34,7 @@ app.post('/paddle', async (c) => {
     const eventData = await paddle.webhooks.unmarshal(rawReqBody, webhookSecret, signature);
     const { data: transactionData } = await c.req.json();
     const [line_items] = transactionData.details.line_items;
+    const customerId = transactionData.customer_id;
 
     const platform = line_items.product.custom_data?.platform || 'unknown';
     if (platform !== 'bgeraser') {
@@ -37,17 +50,20 @@ app.post('/paddle', async (c) => {
 
     switch (eventData.eventType) {
       case EventName.TransactionCreated:
-        console.log(`Subscription ${eventData.data.id} was activated with ${credit} credits`);
+        console.log(
+          `Subscription ${eventData.data.id} was activated with ${credit} credits for customer ${customerId}`
+        );
         break;
       case EventName.TransactionPaid:
         console.log(
-          `Subscription ${eventData.data.id} was paid successfully with ${credit} credits`
+          `Subscription ${eventData.data.id} was paid successfully with ${credit} credits for customer ${customerId}`
         );
         break;
       case EventName.TransactionCompleted:
         console.log(
-          `Subscription ${eventData.data.id} was completed successfully with ${credit} credits`
+          `Subscription ${eventData.data.id} was completed successfully with ${credit} credits for customer ${customerId}`
         );
+        await updateUserToAddCredits(customerId, credit);
         break;
       default:
         console.log(`Unhandled event: ${eventData.eventId} with data: ${eventData.eventType}`);

@@ -1,25 +1,70 @@
 import { Hono } from 'hono';
 
+import { connectDB } from '@/db';
+import { User } from '@/db/models';
 import paddle from '@/lib/paddle';
+import creditPricingData from '@/lib/pricing';
+import { HonoContext } from '@/types/hono';
 
-const app = new Hono();
+const app = new Hono<HonoContext>();
 
 app.post('/', async (c) => {
-  const txn = await paddle.transactions.create({
-    customerId: 'ctm_01jztv1cj1g7m2qkrvb8ddgdqr',
-    items: [
-      {
-        priceId: 'pri_01jzv2ckqjdycxprmghmbhtwk8',
-        quantity: 1,
-      },
-    ],
-  });
+  try {
+    const { packId } = await c.req.json();
 
-  return c.json({
-    success: true,
-    message: 'Transaction created successfully',
-    transaction: txn,
-  });
+    if (!packId) {
+      return c.json({ success: false, message: 'Pack ID is required' }, 400);
+    }
+
+    const plan = creditPricingData.find((p) => p.id === packId);
+    if (!plan) {
+      return c.json({ success: false, message: 'Invalid plan ID' }, 400);
+    }
+
+    const user = c.get('user');
+    if (!user) {
+      return c.json({ success: false, message: 'User not authenticated' }, 401);
+    }
+
+    let paddleCustomerId = user.paddleCustomerId;
+
+    if (!paddleCustomerId) {
+      const [existingCustomer] = await paddle.customers.list({ email: [user.email] }).next();
+
+      paddleCustomerId =
+        existingCustomer?.id ??
+        (
+          await paddle.customers.create({
+            email: user.email,
+            name: user.name,
+          })
+        ).id;
+    }
+
+    await connectDB();
+    await User.findByIdAndUpdate(user.id, {
+      $set: { paddleCustomerId },
+    });
+
+    const transaction = await paddle.transactions.create({
+      customerId: paddleCustomerId,
+      items: [
+        {
+          priceId: plan.paddlePriceId,
+          quantity: 1,
+        },
+      ],
+    });
+
+    return c.json({
+      success: true,
+      message: 'Transaction created successfully',
+      transaction,
+    });
+  } catch (error) {
+    console.error('Error processing payment:', error);
+    return c.json({ success: false, message: 'Internal server error' }, 500);
+  }
 });
 
 export { app as paymentRouter };

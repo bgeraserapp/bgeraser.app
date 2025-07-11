@@ -4,33 +4,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { env } from '@/env';
-
-const creditPacks = [
-  {
-    id: 'starter',
-    name: 'Starter',
-    credits: 50,
-    price: 9.99,
-    popular: false,
-    description: 'Perfect for personal use',
-  },
-  {
-    id: 'pro',
-    name: 'Pro',
-    credits: 150,
-    price: 24.99,
-    popular: true,
-    description: 'Most popular choice',
-  },
-  {
-    id: 'business',
-    name: 'Business',
-    credits: 500,
-    price: 79.99,
-    popular: false,
-    description: 'For teams & agencies',
-  },
-];
+import creditPricingData from '@/lib/pricing';
 
 export function Pricing() {
   return (
@@ -51,7 +25,7 @@ export function Pricing() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto mb-16">
-          {creditPacks.map((pack) => (
+          {creditPricingData.map((pack) => (
             <Card
               key={pack.id}
               className={`relative transition-all duration-300 hover:shadow-lg ${

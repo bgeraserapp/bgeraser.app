@@ -2,68 +2,38 @@
 
 import { CreditCard, Star, Zap } from 'lucide-react';
 
+import creditPricingData, { Pricing } from '@/lib/pricing';
+
 import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 
-export interface CreditPack {
-  id: string;
-  name: string;
-  credits: number;
-  price: number;
-  popular: boolean;
-  description: string;
-}
-
 interface CreditPacksProps {
-  creditPacks?: CreditPack[];
+  creditPacks?: Pricing[];
   onPurchase: (packId: string) => Promise<void>;
   isLoading?: boolean;
   selectedPack?: string | null;
 }
 
-const defaultCreditPacks: CreditPack[] = [
-  {
-    id: 'starter',
-    name: 'Starter',
-    credits: 50,
-    price: 9.99,
-    popular: false,
-    description: 'Personal use',
-  },
-  {
-    id: 'pro',
-    name: 'Pro',
-    credits: 150,
-    price: 24.99,
-    popular: true,
-    description: 'Most popular',
-  },
-  {
-    id: 'proplus',
-    name: 'Pro Plus',
-    credits: 500,
-    price: 79.99,
-    popular: false,
-    description: 'For professionals',
-  },
-];
-
 export function CreditPacks({
-  creditPacks = defaultCreditPacks,
+  creditPacks = creditPricingData,
   onPurchase,
   isLoading = false,
   selectedPack = null,
 }: CreditPacksProps) {
   return (
     <div id="credit-packs">
-      <div className="text-center mb-3">
+      <div className="text-center max-w-3xl mx-auto mb-16">
         <div className="inline-flex items-center gap-2 mb-2">
           <CreditCard className="w-4 h-4 text-primary" />
           <h1 className="text-lg font-semibold text-foreground">Purchase Credits</h1>
         </div>
-        <p className="text-sm text-muted-foreground">
-          Choose a credit pack • $0.20 per image processing
+        <p className="text-sm text-muted-foreground mb-4">
+          No subscriptions, no hidden fees. Pay only for what you use with our credit system.
         </p>
+        <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium">
+          <CreditCard className="w-4 h-4" />1 Credit = 1 Background Removal • Only $0.16-$0.20 per
+          credit
+        </div>
       </div>
 
       {/* Credits Grid */}
@@ -76,41 +46,60 @@ export function CreditPacks({
             }`}
           >
             {pack.popular && (
-              <div className="absolute top-0 left-1/2 transform -translate-x-1/2">
-                <div className="bg-primary text-primary-foreground text-xs font-medium px-2 py-1 rounded-b-md flex items-center gap-1">
+              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                <div className="bg-primary text-primary-foreground text-xs font-medium px-3 py-1 rounded-full flex items-center gap-1">
                   <Star className="w-3 h-3 fill-current" />
-                  Popular
+                  Most Popular
                 </div>
               </div>
             )}
 
-            <CardHeader className={`text-center ${pack.popular ? 'pt-5' : 'pt-3'} pb-2`}>
-              <div className="mx-auto mb-2">
+            <CardHeader className={`text-center ${pack.popular ? 'pt-8' : 'pt-6'} pb-4`}>
+              <div className="mx-auto mb-4">
                 <div
-                  className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                  className={`w-12 h-12 rounded-lg flex items-center justify-center ${
                     pack.popular ? 'bg-primary' : 'bg-muted'
                   }`}
                 >
                   <Zap
-                    className={`w-5 h-5 ${
+                    className={`w-6 h-6 ${
                       pack.popular ? 'text-primary-foreground' : 'text-muted-foreground'
                     }`}
                   />
                 </div>
               </div>
-              <CardTitle className="text-sm font-bold">{pack.name}</CardTitle>
-              <CardDescription className="text-xs">{pack.description}</CardDescription>
-              <div className="mt-1">
+              <CardTitle className="text-xl font-bold">{pack.name}</CardTitle>
+              <CardDescription className="text-sm">{pack.description}</CardDescription>
+              <div className="mt-4">
                 <div className="text-center">
-                  <span className="text-lg font-bold text-foreground">${pack.price}</span>
+                  <span className="text-3xl font-bold text-foreground">${pack.price}</span>
                 </div>
-                <p className="text-xs text-muted-foreground text-center">
-                  {pack.credits} credits • ${(pack.price / pack.credits).toFixed(2)}/credit
+                <p className="text-sm text-muted-foreground text-center mt-1">
+                  {pack.credits} credits • ${(pack.price / pack.credits).toFixed(2)} per credit
                 </p>
               </div>
             </CardHeader>
 
-            <CardContent className="p-3 pt-0">
+            <CardContent className="px-6 pb-6">
+              <div className="space-y-3 mb-6">
+                <div className="flex items-center text-sm">
+                  <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
+                  <span>{pack.credits} background removals</span>
+                </div>
+                <div className="flex items-center text-sm">
+                  <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
+                  <span>High-quality AI processing</span>
+                </div>
+                <div className="flex items-center text-sm">
+                  <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
+                  <span>All image formats supported</span>
+                </div>
+                <div className="flex items-center text-sm">
+                  <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
+                  <span>Credits never expire</span>
+                </div>
+              </div>
+
               <Button
                 onClick={() => onPurchase(pack.id)}
                 disabled={isLoading}
