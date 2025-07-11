@@ -3,10 +3,10 @@
 import { useMutation } from '@tanstack/react-query';
 import { useCallback, useState } from 'react';
 
-import { FilePreview } from '@/components/background-remover/file-preview';
-import { FileUpload } from '@/components/background-remover/file-upload';
-import { ProcessedResults } from '@/components/background-remover/processed-results';
-import { ModeToggle } from '@/components/ui/mode-toggle';
+import { FilePreview } from './file-preview';
+import { FileUpload } from './file-upload';
+import { ModeToggle } from './mode-toggle';
+import { ProcessedResults } from './processed-results';
 
 interface ProcessedImage {
   originalUrl: string;
@@ -29,7 +29,6 @@ interface BackgroundRemovalResponse {
   error?: string;
 }
 
-// API call function
 async function removeBackgroundAPI(formData: FormData): Promise<BackgroundRemovalResponse> {
   const response = await fetch('/api/models/bg-remover', {
     method: 'POST',
@@ -44,17 +43,15 @@ async function removeBackgroundAPI(formData: FormData): Promise<BackgroundRemova
   return response.json();
 }
 
-export function BackgroundRemover() {
+export default function BackgroundRemover() {
   const [files, setFiles] = useState<UploadedFile[]>([]);
   const [processedImages, setProcessedImages] = useState<ProcessedImage[]>([]);
   const [progress, setProgress] = useState(0);
   const [multipleMode, setMultipleMode] = useState(false);
 
-  // React Query mutation for background removal
   const backgroundRemovalMutation = useMutation({
     mutationFn: removeBackgroundAPI,
     onSuccess: (data) => {
-      // Handle both single and multiple results
       const results = Array.isArray(data.results) ? data.results : [data.results];
       setProcessedImages(
         results.map((r: ProcessedImage) => ({
@@ -95,7 +92,6 @@ export function BackgroundRemover() {
     if (files.length === 0) return;
 
     setProgress(0);
-
     const formData = new FormData();
 
     if (multipleMode) {
@@ -103,11 +99,9 @@ export function BackgroundRemover() {
         formData.append('images', file);
       });
     } else {
-      // Single mode: append as 'image' for single processing
       formData.append('image', files[0].file);
     }
 
-    // Simulate progress
     const progressInterval = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 90) {
@@ -118,7 +112,6 @@ export function BackgroundRemover() {
       });
     }, 500);
 
-    // Use React Query mutation
     backgroundRemovalMutation.mutate(formData, {
       onSettled: () => {
         clearInterval(progressInterval);
@@ -140,34 +133,57 @@ export function BackgroundRemover() {
   }, [reset]);
 
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-4 p-3">
-      <div className="space-y-3">
-        <ModeToggle multipleMode={multipleMode} onToggleMode={toggleMode} />
+    <div className="min-h-screen bg-gradient-page dark:bg-gradient-page-dark">
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-6xl mx-auto space-y-8">
+          {/* Header */}
+          <div className="text-center space-y-4 animate-in fade-in-0 duration-1000">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+              AI Background Remover
+            </h1>
+            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+              Remove backgrounds from your images instantly with AI-powered precision. Perfect for
+              e-commerce, social media, and professional photography.
+            </p>
+          </div>
 
-        <div className="animate-in fade-in-50 duration-300">
-          <FileUpload
-            files={files}
-            onFilesChange={onFilesChange}
-            multipleMode={multipleMode}
-            onReset={onMutationReset}
-          />
-        </div>
+          {/* Mode Toggle */}
+          <div className="flex justify-center animate-in fade-in-0 duration-1000 delay-200">
+            <ModeToggle multipleMode={multipleMode} onToggleMode={toggleMode} />
+          </div>
 
-        <div className="animate-in fade-in-50 duration-500">
-          <FilePreview
-            files={files}
-            onRemoveFile={removeFile}
-            onProcessImages={processImages}
-            onReset={reset}
-            multipleMode={multipleMode}
-            isProcessing={backgroundRemovalMutation.isPending}
-            progress={progress}
-            error={backgroundRemovalMutation.error?.message}
-          />
-        </div>
+          {/* Main Content */}
+          <div className="grid gap-8">
+            <div className="animate-in slide-in-from-bottom-4 duration-700 delay-300">
+              <FileUpload
+                files={files}
+                onFilesChange={onFilesChange}
+                multipleMode={multipleMode}
+                onReset={onMutationReset}
+              />
+            </div>
 
-        <div className="animate-in fade-in-50 duration-700">
-          <ProcessedResults processedImages={processedImages} multipleMode={multipleMode} />
+            {files.length > 0 && (
+              <div className="animate-in slide-in-from-bottom-4 duration-700 delay-500">
+                <FilePreview
+                  files={files}
+                  onRemoveFile={removeFile}
+                  onProcessImages={processImages}
+                  onReset={reset}
+                  multipleMode={multipleMode}
+                  isProcessing={backgroundRemovalMutation.isPending}
+                  progress={progress}
+                  error={backgroundRemovalMutation.error?.message}
+                />
+              </div>
+            )}
+
+            {processedImages.length > 0 && (
+              <div className="animate-in slide-in-from-bottom-4 duration-700 delay-700">
+                <ProcessedResults processedImages={processedImages} multipleMode={multipleMode} />
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -1,11 +1,12 @@
 /* eslint-disable @next/next/no-img-element */
 'use client';
 
-import { Archive, Download, Image as ImageIcon, RefreshCw } from 'lucide-react';
+import { Archive, Download, Eye, EyeOff, Sparkles, Zap } from 'lucide-react';
 import { useCallback, useState } from 'react';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
 interface ProcessedImage {
@@ -23,11 +24,13 @@ interface ProcessedResultsProps {
 export function ProcessedResults({ processedImages, multipleMode }: ProcessedResultsProps) {
   const [isDownloadingZip, setIsDownloadingZip] = useState(false);
   const [imageView, setImageView] = useState<'side-by-side' | 'overlay'>('side-by-side');
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   const downloadImage = useCallback((url: string, filename: string) => {
     const link = document.createElement('a');
     link.href = url;
     link.download = filename;
+    link.target = '_blank'; // Open in a new tab
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -75,182 +78,218 @@ export function ProcessedResults({ processedImages, multipleMode }: ProcessedRes
   }
 
   return (
-    <Card className="border shadow-sm">
-      <CardHeader className="pb-3">
+    <Card className="overflow-hidden bg-card/80 backdrop-blur-sm border shadow-xl">
+      <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <svg
-                className="w-4 h-4 text-green-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
-              Processed {multipleMode ? 'Images' : 'Image'}
-            </CardTitle>
-            <CardDescription className="text-sm">
-              {multipleMode ? 'Images' : 'Image'} with background removed
-            </CardDescription>
-          </div>
-          {!multipleMode && processedImages.length === 1 && (
-            <div className="flex gap-1">
-              <Button
-                variant={imageView === 'side-by-side' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setImageView('side-by-side')}
-              >
-                Split
-              </Button>
-              <Button
-                variant={imageView === 'overlay' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setImageView('overlay')}
-              >
-                Overlay
-              </Button>
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-gradient-success rounded-lg flex items-center justify-center">
+              <Sparkles className="w-4 h-4 text-success-foreground" />
             </div>
-          )}
+            <div>
+              <CardTitle className="text-xl font-semibold">✨ Magic Complete!</CardTitle>
+              <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                {processedImages.length} image{processedImages.length > 1 ? 's' : ''} processed
+                successfully
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {!multipleMode && processedImages.length === 1 && (
+              <div className="flex gap-1">
+                <Button
+                  variant={imageView === 'side-by-side' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setImageView('side-by-side')}
+                  className={imageView === 'side-by-side' ? 'bg-primary hover:bg-primary/90' : ''}
+                >
+                  <Eye className="w-4 h-4 mr-1" />
+                  Split
+                </Button>
+                <Button
+                  variant={imageView === 'overlay' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setImageView('overlay')}
+                  className={imageView === 'overlay' ? 'bg-primary hover:bg-primary/90' : ''}
+                >
+                  <EyeOff className="w-4 h-4 mr-1" />
+                  Overlay
+                </Button>
+              </div>
+            )}
+
+            {multipleMode && processedImages.length > 1 && (
+              <Button
+                variant="outline"
+                onClick={downloadAllAsZip}
+                disabled={isDownloadingZip}
+                className="bg-card/50 hover:bg-card/80 border-border hover:border-primary transition-all duration-300"
+              >
+                <Archive className="h-4 w-4 mr-2" />
+                {isDownloadingZip ? 'Creating ZIP...' : 'Download All'}
+              </Button>
+            )}
+          </div>
         </div>
       </CardHeader>
-      <CardContent className="p-4 pt-0">
-        {multipleMode && processedImages.length > 1 && (
-          <div className="mb-3 flex justify-end">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={downloadAllAsZip}
-              disabled={isDownloadingZip}
-            >
-              <Archive className="h-3 w-3 mr-1" />
-              {isDownloadingZip ? 'Creating...' : 'Download ZIP'}
-            </Button>
-          </div>
-        )}
 
-        <div className={cn(multipleMode ? 'space-y-4' : 'space-y-3')}>
-          {processedImages.map((result, index) => (
-            <div
-              key={index}
-              className="space-y-4 animate-in fade-in-50 duration-500"
-              style={{ animationDelay: `${index * 200}ms` }}
-            >
-              {!multipleMode && imageView === 'overlay' ? (
-                // Overlay view for single image
-                <div className="relative max-w-2xl mx-auto">
-                  <div className="aspect-[4/3] rounded-xl overflow-hidden border-2 shadow-lg">
-                    <div className="relative w-full h-full">
-                      <img
-                        src={result.originalUrl}
-                        alt="Original"
-                        className="absolute inset-0 w-full h-full object-cover"
-                      />
-                      <div
-                        className="absolute inset-0 w-full h-full transition-opacity duration-300 hover:opacity-0"
-                        style={{
-                          backgroundImage: `conic-gradient(from 0deg, #e5e7eb 0deg, #e5e7eb 90deg, #f3f4f6 90deg, #f3f4f6 180deg, #e5e7eb 180deg, #e5e7eb 270deg, #f3f4f6 270deg, #f3f4f6 360deg)`,
-                          backgroundSize: '20px 20px',
-                        }}
-                      >
-                        <img
-                          src={result.processedUrl}
-                          alt="Processed"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="absolute top-4 left-4 bg-black/70 text-white px-3 py-1 rounded-full text-sm">
-                    Hover to see original
-                  </div>
-                </div>
-              ) : (
-                // Side by side view
+      <CardContent className="space-y-8">
+        {processedImages.map((result, index) => (
+          <div
+            key={index}
+            className="space-y-6 animate-in fade-in-0 duration-700"
+            style={{ animationDelay: `${index * 200}ms` }}
+          >
+            {!multipleMode && imageView === 'overlay' ? (
+              // Overlay view for single image
+              <div className="relative max-w-3xl mx-auto">
                 <div
-                  className={cn(
-                    'gap-6',
-                    multipleMode ? 'grid md:grid-cols-2' : 'grid grid-cols-1 lg:grid-cols-2'
-                  )}
+                  className="aspect-[4/3] rounded-2xl overflow-hidden border-2 shadow-2xl hover:shadow-3xl transition-all duration-500 cursor-pointer"
+                  onMouseEnter={() => setHoveredIndex(index)}
+                  onMouseLeave={() => setHoveredIndex(null)}
                 >
-                  <div className="space-y-3">
-                    <h3 className="text-base font-semibold flex items-center gap-2">
-                      <div className="p-1.5 bg-gray-500 rounded-lg">
-                        <ImageIcon className="h-4 w-4 text-white" />
-                      </div>
-                      Original
-                    </h3>
+                  <div className="relative w-full h-full">
+                    <img
+                      src={result.originalUrl || '/placeholder.svg'}
+                      alt="Original"
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
                     <div
                       className={cn(
-                        'rounded-xl overflow-hidden border-2 shadow-lg hover:shadow-xl transition-all duration-300',
-                        multipleMode ? 'aspect-square' : 'aspect-[4/3]'
-                      )}
-                    >
-                      <img
-                        src={result.originalUrl}
-                        alt={`Original ${index + 1}`}
-                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <h3 className="text-base font-semibold flex items-center gap-2">
-                      <div className="p-1.5 bg-green-500 rounded-lg">
-                        <RefreshCw className="h-4 w-4 text-white" />
-                      </div>
-                      Background Removed
-                    </h3>
-                    <div
-                      className={cn(
-                        'rounded-xl overflow-hidden border-2 shadow-lg hover:shadow-xl transition-all duration-300',
-                        multipleMode ? 'aspect-square' : 'aspect-[4/3]'
+                        'absolute inset-0 w-full h-full transition-opacity duration-500',
+                        hoveredIndex === index ? 'opacity-0' : 'opacity-100'
                       )}
                       style={{
-                        backgroundImage: `conic-gradient(from 0deg, #e5e7eb 0deg, #e5e7eb 90deg, #f3f4f6 90deg, #f3f4f6 180deg, #e5e7eb 180deg, #e5e7eb 270deg, #f3f4f6 270deg, #f3f4f6 360deg)`,
+                        backgroundImage: `var(--checkerboard)`,
                         backgroundSize: '20px 20px',
                       }}
                     >
                       <img
-                        src={result.processedUrl}
-                        alt={`Processed ${index + 1}`}
-                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                        src={result.processedUrl || '/placeholder.svg'}
+                        alt="Processed"
+                        className="w-full h-full object-cover"
                       />
                     </div>
                   </div>
                 </div>
-              )}
 
-              <div className="flex items-center justify-between p-4 bg-muted/30 rounded-xl">
-                <div className="flex items-center gap-4">
-                  <div className="text-sm text-muted-foreground">
-                    {result.processingTime &&
-                      `Processed in ${(result.processingTime / 1000).toFixed(1)}s`}
-                  </div>
-                  {result.imageId && (
-                    <div className="text-xs text-muted-foreground font-mono">
-                      ID: {result.imageId}
-                    </div>
-                  )}
+                <div className="absolute top-4 left-4 bg-background/70 backdrop-blur-sm text-foreground px-4 py-2 rounded-full text-sm font-medium border">
+                  <Eye className="w-4 h-4 inline mr-2" />
+                  Hover to see original
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => downloadImage(result.processedUrl, `bg-removed-${index + 1}.png`)}
-                  className="shadow-sm hover:shadow-md transition-shadow"
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  Download
-                </Button>
+
+                <div className="absolute top-4 right-4 bg-success/90 backdrop-blur-sm text-success-foreground px-4 py-2 rounded-full text-sm font-medium">
+                  <Zap className="w-4 h-4 inline mr-2" />
+                  Background Removed
+                </div>
               </div>
+            ) : (
+              // Side by side view
+              <div className="grid gap-8 lg:grid-cols-2">
+                {/* Original Image */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-6 h-6 bg-muted-foreground/20 rounded-lg flex items-center justify-center">
+                      <svg
+                        className="w-3 h-3 text-muted-foreground"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
+                      </svg>
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                      Original
+                    </h3>
+                    <Badge variant="secondary" className="bg-muted text-muted-foreground">
+                      Before
+                    </Badge>
+                  </div>
+
+                  <div
+                    className={cn(
+                      'rounded-2xl overflow-hidden border-2 shadow-xl hover:shadow-2xl transition-all duration-500 group cursor-pointer',
+                      multipleMode ? 'aspect-square' : 'aspect-[4/3]',
+                      'border-border'
+                    )}
+                  >
+                    <img
+                      src={result.originalUrl || '/placeholder.svg'}
+                      alt={`Original ${index + 1}`}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Processed Image */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-6 h-6 bg-gradient-success rounded-lg flex items-center justify-center">
+                      <Sparkles className="w-3 h-3 text-success-foreground" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                      AI Enhanced
+                    </h3>
+                    <Badge variant="secondary" className="bg-success-50 text-success">
+                      After
+                    </Badge>
+                  </div>
+
+                  <div
+                    className={cn(
+                      'rounded-2xl overflow-hidden border-2 shadow-xl hover:shadow-2xl transition-all duration-500 group cursor-pointer',
+                      multipleMode ? 'aspect-square' : 'aspect-[4/3]',
+                      'border-success/30'
+                    )}
+                    style={{
+                      backgroundImage: `var(--checkerboard)`,
+                      backgroundSize: '20px 20px',
+                    }}
+                  >
+                    <img
+                      src={result.processedUrl || '/placeholder.svg'}
+                      alt={`Processed ${index + 1}`}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Stats and Download */}
+            <div className="flex items-center justify-between p-6 bg-gradient-to-r from-primary/5 to-success/5 rounded-2xl border border-primary/20">
+              <div className="flex items-center gap-6">
+                {result.processingTime && (
+                  <div className="flex items-center gap-2">
+                    <Zap className="w-4 h-4 text-primary" />
+                    <span className="text-sm font-medium text-foreground">
+                      Processed in {(result.processingTime / 1000).toFixed(1)}s
+                    </span>
+                  </div>
+                )}
+                {result.imageId && (
+                  <div className="text-xs text-muted-foreground font-mono bg-muted/50 px-2 py-1 rounded">
+                    ID: {result.imageId}
+                  </div>
+                )}
+              </div>
+
+              <Button
+                onClick={() => downloadImage(result.processedUrl, `bg-removed-${index + 1}.png`)}
+                className="bg-gradient-primary hover:opacity-90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Download
+              </Button>
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </CardContent>
     </Card>
   );

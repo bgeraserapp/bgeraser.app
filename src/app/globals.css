@@ -122,3 +122,31 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  .bg-gradient-primary {
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-600)));
+  }
+
+  .bg-gradient-success {
+    background: linear-gradient(135deg, hsl(var(--success)), hsl(var(--success-600)));
+  }
+
+  .bg-gradient-page {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--background)),
+      hsl(var(--primary-50)),
+      hsl(var(--primary-100))
+    );
+  }
+
+  .bg-gradient-page-dark {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--background)),
+      hsl(var(--primary-50)),
+      hsl(var(--muted))
+    );
+  }
+}
