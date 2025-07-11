@@ -1,7 +1,6 @@
-import { IconScreenshot } from '@tabler/icons-react';
 import Link from 'next/link';
 
-import AppConfig from '@/lib/app-config';
+import { env } from '@/env';
 import { cn } from '@/lib/utils';
 
 import { ThemeToggle } from '../theme-toggle';
@@ -15,12 +14,24 @@ function DashboardHeader() {
       )}
     >
       <div className="mx-auto max-w-5xl px-3 py-1.5 flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <Link className="flex items-center space-x-2" href="/">
-            <IconScreenshot className="h-6 w-6 text-primary" />
-            <span className="text-lg font-semibold text-foreground">{AppConfig.title}</span>
-          </Link>
-        </div>
+        <Link href={`${env.NEXT_PUBLIC_PORTAL_URL}`} className="inline-flex items-center gap-2">
+          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+            <svg
+              className="w-4 h-4 text-primary-foreground"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-bold text-foreground">Background Remover</h1>
+        </Link>
         <div className="flex items-center space-x-1">
           <ThemeToggle />
           <UserNav />
