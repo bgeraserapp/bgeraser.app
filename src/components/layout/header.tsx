@@ -14,14 +14,14 @@ function DashboardHeader() {
         'sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b'
       )}
     >
-      <div className="mx-auto max-w-7xl px-2 py-2 flex items-center justify-between">
-        <div className="flex items-center space-x-4">
+      <div className="mx-auto max-w-5xl px-3 py-1.5 flex items-center justify-between">
+        <div className="flex items-center space-x-3">
           <Link className="flex items-center space-x-2" href="/">
-            <IconScreenshot className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold text-foreground">{AppConfig.title}</span>
+            <IconScreenshot className="h-6 w-6 text-primary" />
+            <span className="text-lg font-semibold text-foreground">{AppConfig.title}</span>
           </Link>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-1">
           <ThemeToggle />
           <UserNav />
         </div>

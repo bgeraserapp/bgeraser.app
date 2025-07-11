@@ -47,19 +47,26 @@ export function FilePreview({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <div
         className={cn(
           multipleMode
-            ? 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4'
+            ? 'grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3'
             : 'flex justify-center'
         )}
       >
-        {files.map(({ file, preview, id }) => (
-          <div key={id} className={cn('relative group', !multipleMode && 'w-full max-w-sm')}>
+        {files.map(({ file, preview, id }, index) => (
+          <div
+            key={id}
+            className={cn(
+              'relative group animate-in fade-in-50 duration-500',
+              !multipleMode && 'w-full max-w-md'
+            )}
+            style={{ animationDelay: `${index * 100}ms` }}
+          >
             <div
               className={cn(
-                'rounded-lg overflow-hidden border',
+                'rounded-lg overflow-hidden border shadow-sm hover:shadow-md transition-shadow duration-200',
                 multipleMode ? 'aspect-square' : 'aspect-[4/3]'
               )}
             >
@@ -71,7 +78,12 @@ export function FilePreview({
             >
               <X className="h-3 w-3" />
             </button>
-            <p className="text-xs text-muted-foreground mt-1 truncate text-center">{file.name}</p>
+            <div className="mt-1 text-center">
+              <p className="text-xs font-medium text-foreground truncate">{file.name}</p>
+              <p className="text-xs text-muted-foreground">
+                {(file.size / (1024 * 1024)).toFixed(1)}MB
+              </p>
+            </div>
           </div>
         ))}
       </div>
@@ -86,21 +98,21 @@ export function FilePreview({
           ) : (
             <>
               <RefreshCw className="h-4 w-4 mr-2" />
-              Remove Background
+              Remove Background{multipleMode && files.length > 1 ? 's' : ''}
             </>
           )}
         </Button>
         <Button variant="outline" onClick={onReset}>
-          <X className="h-4 w-4 mr-2" />
-          Clear All
+          <X className="h-4 w-4 mr-1" />
+          Clear
         </Button>
       </div>
 
       {isProcessing && (
         <div className="space-y-2">
           <Progress value={progress} className="w-full" />
-          <p className="text-sm text-muted-foreground text-center">
-            Processing images... {Math.round(progress)}%
+          <p className="text-sm text-center text-muted-foreground">
+            Processing... {Math.round(progress)}%
           </p>
         </div>
       )}

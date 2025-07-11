@@ -70,53 +70,55 @@ export function FileUpload({ files, onFilesChange, multipleMode, onReset }: File
   });
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Upload {multipleMode ? 'Images' : 'Image'}</CardTitle>
-        <CardDescription>
+    <Card className="border shadow-sm">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-lg">
+          <Upload className="w-4 h-4 text-primary" />
+          Upload {multipleMode ? 'Images' : 'Image'}
+        </CardTitle>
+        <CardDescription className="text-sm">
           {multipleMode
-            ? 'Drag and drop multiple images here or click to select files. Maximum 10MB per image.'
-            : 'Drag and drop an image here or click to select a file. Maximum 10MB.'}
+            ? 'Drop multiple images or click to select (max 10MB each)'
+            : 'Drop an image or click to select (max 10MB)'}
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-4 pt-0">
         <div
           {...getRootProps()}
           className={cn(
-            'relative border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer',
+            'relative border border-dashed rounded-lg p-4 text-center transition-all duration-200 cursor-pointer',
             isDragActive
               ? 'border-primary bg-primary/5'
-              : 'border-muted-foreground/25 hover:border-muted-foreground/50',
-            files.length === 0 ? 'min-h-32' : 'min-h-20'
+              : 'border-muted-foreground/25 hover:border-muted-foreground/50 hover:bg-muted/30',
+            files.length === 0 ? 'min-h-24' : 'min-h-16'
           )}
           onClick={open}
         >
           <input {...getInputProps()} />
 
           {files.length === 0 ? (
-            <div className="space-y-4">
-              <Upload className="mx-auto h-12 w-12 text-muted-foreground" />
+            <div className="space-y-3">
+              <Upload className="mx-auto h-8 w-8 text-muted-foreground" />
               <div>
-                <p className="text-lg font-medium">
+                <p className="text-sm font-medium text-foreground">
                   Drop {multipleMode ? 'images' : 'an image'} here
                 </p>
-                <p className="text-sm text-muted-foreground">
-                  Or click to select {multipleMode ? 'files' : 'a file'} from your computer
-                </p>
+                <p className="text-xs text-muted-foreground">Or click to select from computer</p>
               </div>
             </div>
           ) : (
             <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm font-medium text-foreground">
                 {files.length} image{files.length > 1 ? 's' : ''} selected
               </p>
               {multipleMode && files.length < 10 && (
                 <Button variant="outline" size="sm" onClick={open}>
-                  Add More Images
+                  <Upload className="w-3 h-3 mr-1" />
+                  Add More
                 </Button>
               )}
               {multipleMode && files.length >= 10 && (
-                <p className="text-xs text-muted-foreground">Maximum 10 images allowed</p>
+                <p className="text-xs text-amber-600 dark:text-amber-400">Maximum 10 images</p>
               )}
             </div>
           )}
