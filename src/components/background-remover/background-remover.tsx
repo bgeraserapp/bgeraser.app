@@ -3,10 +3,10 @@
 import { useMutation } from '@tanstack/react-query';
 import { useCallback, useState } from 'react';
 
-import { FilePreview } from '@/components/ui/file-preview';
-import { FileUpload } from '@/components/ui/file-upload';
+import { FilePreview } from '@/components/background-remover/file-preview';
+import { FileUpload } from '@/components/background-remover/file-upload';
+import { ProcessedResults } from '@/components/background-remover/processed-results';
 import { ModeToggle } from '@/components/ui/mode-toggle';
-import { ProcessedResults } from '@/components/ui/processed-results';
 
 interface ProcessedImage {
   originalUrl: string;

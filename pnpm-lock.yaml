@@ -41,6 +41,12 @@ importers:
       '@hookform/resolvers':
         specifier: ^5.1.1
         version: 5.1.1(react-hook-form@7.60.0(react@19.1.0))
+      '@paddle/paddle-js':
+        specifier: ^1.4.2
+        version: 1.4.2
+      '@paddle/paddle-node-sdk':
+        specifier: ^3.0.0
+        version: 3.0.0
       '@radix-ui/react-accordion':
         specifier: ^1.2.11
         version: 1.2.11(@types/react-dom@19.1.6(@types/react@19.1.8))(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -140,12 +146,6 @@ importers:
       '@tanstack/react-table':
         specifier: ^8.21.3
         version: 8.21.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      '@types/jszip':
-        specifier: ^3.4.1
-        version: 3.4.1
-      '@types/react-dropzone':
-        specifier: ^5.1.0
-        version: 5.1.0(react@19.1.0)
       ai:
         specifier: ^4.3.16
         version: 4.3.17(react@19.1.0)(zod@3.25.76)
@@ -977,6 +977,13 @@ packages:
   '@opentelemetry/api@1.9.0':
     resolution: {integrity: sha512-3giAOQvZiH5F9bMlMiv8+GSPMeqg0dbaeo58/0SlA9sxSqZhnUtxzX9/2FzyhS9sWQf5S0GJE0AKBrFqjpeYcg==}
     engines: {node: '>=8.0.0'}
+
+  '@paddle/paddle-js@1.4.2':
+    resolution: {integrity: sha512-pY9jYS+g3vk6ecc7GbCsVSuBEo1Yh+hxYE4i2XoY5/ZBAZLuCkQi/80hOmSBkFoaETohOpDmurILlQdgUHUcvw==}
+
+  '@paddle/paddle-node-sdk@3.0.0':
+    resolution: {integrity: sha512-7wD4qmZxPSG4YZUXppX+qWJjoes6a6Mk6VbhJ9L1Mm+fik/sUj81YrN49kGzmQ1bG/0Mg3pGC3n07CtB+uDuKA==}
+    engines: {node: '>=20'}
 
   '@peculiar/asn1-android@2.3.16':
     resolution: {integrity: sha512-a1viIv3bIahXNssrOIkXZIlI2ePpZaNmR30d4aBL99mu2rO+mT9D6zBsp7H6eROWGtmwv0Ionp5olJurIo09dw==}
@@ -2198,10 +2205,6 @@ packages:
   '@types/json5@0.0.29':
     resolution: {integrity: sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==}
 
-  '@types/jszip@3.4.1':
-    resolution: {integrity: sha512-TezXjmf3lj+zQ651r6hPqvSScqBLvyPI9FxdXBqpEwBijNGQ2NXpaFW/7joGzveYkKQUil7iiDHLo6LV71Pc0A==}
-    deprecated: This is a stub types definition. jszip provides its own type definitions, so you do not need this installed.
-
   '@types/node@20.19.5':
     resolution: {integrity: sha512-M4CtoNkoQrYOD7O80KM7DjGdzwMvoXZ12SGUbxc0X1AK6gfBKjkJswW/B4MyTPMIuU0sodukEgj8CzIJKEAQXQ==}
 
@@ -2209,10 +2212,6 @@ packages:
     resolution: {integrity: sha512-4hOiT/dwO8Ko0gV1m/TJZYk3y0KBnY9vzDh7W+DH17b2HFSOGgdj33dhihPeuy3l0q23+4e+hoXHV6hCC4dCXw==}
     peerDependencies:
       '@types/react': ^19.0.0
-
-  '@types/react-dropzone@5.1.0':
-    resolution: {integrity: sha512-VCdDCwSsr1MT2frsVl5p8qH+LWwUGzsaNtGkEQekHviZqK0dmTbiIp2Pzfb8lTkH4oTE2JtBbWnbuM6B4FH80A==}
-    deprecated: This is a stub types definition. react-dropzone provides its own type definitions, so you do not need this installed.
 
   '@types/react@19.1.8':
     resolution: {integrity: sha512-AwAfQ2Wa5bCx9WP8nZL2uMZWod7J7/JSplxbTmBQ5ms6QpqNYm672H0Vu9ZVKVngQ+ii4R/byguVEUZQyeg44g==}
@@ -5694,6 +5693,10 @@ snapshots:
 
   '@opentelemetry/api@1.9.0': {}
 
+  '@paddle/paddle-js@1.4.2': {}
+
+  '@paddle/paddle-node-sdk@3.0.0': {}
+
   '@peculiar/asn1-android@2.3.16':
     dependencies:
       '@peculiar/asn1-schema': 2.3.15
@@ -7035,10 +7038,6 @@ snapshots:
 
   '@types/json5@0.0.29': {}
 
-  '@types/jszip@3.4.1':
-    dependencies:
-      jszip: 3.10.1
-
   '@types/node@20.19.5':
     dependencies:
       undici-types: 6.21.0
@@ -7046,12 +7045,6 @@ snapshots:
   '@types/react-dom@19.1.6(@types/react@19.1.8)':
     dependencies:
       '@types/react': 19.1.8
-
-  '@types/react-dropzone@5.1.0(react@19.1.0)':
-    dependencies:
-      react-dropzone: 14.3.8(react@19.1.0)
-    transitivePeerDependencies:
-      - react
 
   '@types/react@19.1.8':
     dependencies:
