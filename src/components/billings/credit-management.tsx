@@ -14,43 +14,47 @@ interface CreditManagementProps {
 export function CreditManagement({ onBuyCreditClick }: CreditManagementProps) {
   const { user } = useAuth();
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <Wallet className="w-5 h-5 text-primary" />
-        <h2 className="text-xl font-semibold text-foreground">Credits & Billing</h2>
+    <div className="space-y-6">
+      <div className="flex items-center gap-3">
+        <Wallet className="w-6 h-6 text-primary" />
+        <h2 className="text-2xl font-bold text-foreground">Credits & Billing</h2>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Current Credits Display */}
-        <Card className="border border-border hover:shadow-sm transition-shadow">
-          <CardContent className="p-4">
+        <Card className="border border-border hover:shadow-lg transition-all duration-200">
+          <CardContent className="p-6">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Available Credits</p>
-                <div className="flex items-center gap-2">
-                  <Zap className="w-5 h-5 text-primary" />
-                  <span className="text-2xl font-bold text-foreground">{user?.credits}</span>
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-muted-foreground">Available Credits</p>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-primary/10 rounded-lg">
+                    <Zap className="w-6 h-6 text-primary" />
+                  </div>
+                  <span className="text-3xl font-bold text-foreground">{user?.credits || 0}</span>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Ready to use for background removal
-                </p>
+                <p className="text-sm text-muted-foreground">Ready to use for background removal</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         {/* Add Credits Action */}
-        <Card className="border border-primary/20 bg-primary/5 hover:bg-primary/10 transition-colors">
-          <CardContent className="p-4">
+        <Card className="border border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10 hover:from-primary/10 hover:to-primary/15 transition-all duration-200 hover:shadow-lg">
+          <CardContent className="p-6">
             <div className="flex items-center justify-between h-full">
-              <div>
-                <p className="text-sm font-medium text-foreground mb-1">Need More Credits?</p>
-                <p className="text-xs text-muted-foreground">
+              <div className="space-y-2">
+                <p className="text-base font-semibold text-foreground">Need More Credits?</p>
+                <p className="text-sm text-muted-foreground">
                   Purchase additional credits instantly
                 </p>
+                <div className="flex items-center gap-2 text-xs text-primary font-medium">
+                  <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
+                  <span>No subscription required</span>
+                </div>
               </div>
-              <Button onClick={onBuyCreditClick} size="sm" className="gap-2 ml-4">
-                <Plus className="w-4 h-4" />
+              <Button onClick={onBuyCreditClick} size="lg" className="gap-2 ml-4 shadow-md">
+                <Plus className="w-5 h-5" />
                 Buy Credits
               </Button>
             </div>

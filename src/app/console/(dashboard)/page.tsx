@@ -1,12 +1,11 @@
 'use client';
 
 import BackgroundRemover from '@/components/background-remover/background-remover';
-import { PageWrapper } from '@/components/layout/page-wrapper';
 
 export default function ConsolePage() {
   return (
-    <PageWrapper>
+    <div className="min-h-screen w-full">
       <BackgroundRemover />
-    </PageWrapper>
+    </div>
   );
 }

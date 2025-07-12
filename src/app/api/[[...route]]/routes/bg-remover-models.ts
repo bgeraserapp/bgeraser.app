@@ -62,7 +62,25 @@ app.post('/', async (c) => {
 
     // Apply credit requirement middleware dynamically
     const creditMiddleware = requireCredits(creditsNeeded);
-    await creditMiddleware(c, async () => {});
+    try {
+      await creditMiddleware(c, async () => {});
+    } catch (error) {
+      // If credit middleware fails, enhance the error response
+      if (error instanceof Response && error.status === 402) {
+        const errorData = await error.json();
+        return c.json(
+          {
+            error: 'Insufficient credits to process request',
+            code: 'INSUFFICIENT_CREDITS',
+            creditsRequired: creditsNeeded,
+            creditsAvailable: errorData.creditsAvailable || 0,
+            message: `You need ${creditsNeeded} credit${creditsNeeded > 1 ? 's' : ''} but only have ${errorData.creditsAvailable || 0} available. Please purchase more credits to continue.`,
+          },
+          402
+        );
+      }
+      throw error;
+    }
 
     const userData = c.get('userData');
     if (!userData) {

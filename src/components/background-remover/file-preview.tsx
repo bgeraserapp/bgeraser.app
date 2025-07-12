@@ -25,6 +25,7 @@ interface FilePreviewProps {
   isProcessing: boolean;
   progress: number;
   error?: string;
+  credits?: number;
 }
 
 export function FilePreview({
@@ -36,6 +37,7 @@ export function FilePreview({
   isProcessing,
   progress,
   error,
+  credits = 0,
 }: FilePreviewProps) {
   const removeFile = useCallback(
     (id: string) => {
@@ -135,18 +137,24 @@ export function FilePreview({
         <div className="flex gap-3">
           <Button
             onClick={onProcessImages}
-            disabled={isProcessing}
-            className="flex-1 hover:opacity-90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 h-12"
+            disabled={isProcessing || credits < files.length}
+            className="flex-1 hover:opacity-90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 h-12 disabled:opacity-50"
           >
             {isProcessing ? (
               <>
                 <Loader2 className="h-5 w-5 animate-spin mr-2" />
                 Processing Magic...
               </>
+            ) : credits < files.length ? (
+              <>
+                <Wand2 className="h-5 w-5 mr-2" />
+                Insufficient Credits ({files.length} needed)
+              </>
             ) : (
               <>
                 <Wand2 className="h-5 w-5 mr-2" />
-                Remove Background{multipleMode && files.length > 1 ? 's' : ''}
+                Remove Background{multipleMode && files.length > 1 ? 's' : ''} ({files.length}{' '}
+                credit{files.length > 1 ? 's' : ''})
               </>
             )}
           </Button>

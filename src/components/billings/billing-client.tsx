@@ -63,7 +63,7 @@ export function BillingClient() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
+    <div className="max-w-7xl mx-auto p-6 lg:p-8">
       <CreditManagement onBuyCreditClick={handleBuyCreditClick} />
 
       <CreditPlansDialog
