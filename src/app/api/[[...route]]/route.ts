@@ -8,6 +8,7 @@ import betterAuthRoute from './routes/better-auth';
 import { bgRemoverRoute } from './routes/bg-remover';
 import { healthRoute } from './routes/health';
 import { paymentRouter } from './routes/payment';
+import { transactionsRouter } from './routes/transactions';
 import { webhookRouter } from './routes/webhook';
 
 const app = new Hono<HonoContext>().basePath('/api');
@@ -30,6 +31,7 @@ app.route('/', betterAuthRoute);
 app.route('/health', healthRoute);
 app.route('/models/bg-remover', bgRemoverRoute);
 app.route('/payment', paymentRouter);
+app.route('/transactions', transactionsRouter);
 app.route('/webhook', webhookRouter);
 
 export const dynamic = 'force-dynamic';

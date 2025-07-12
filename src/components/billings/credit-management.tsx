@@ -8,7 +8,6 @@ import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
 
 interface CreditManagementProps {
-  currentCredits?: number;
   onBuyCreditClick?: () => void;
 }
 

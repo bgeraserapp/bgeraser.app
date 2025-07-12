@@ -8,11 +8,7 @@ import { env } from '@/env';
 import { CreditManagement } from './credit-management';
 import { CreditPlansDialog } from './credit-plans-dialog';
 
-interface BillingClientProps {
-  currentCredits?: number;
-}
-
-export function BillingClient({ currentCredits = 0 }: BillingClientProps) {
+export function BillingClient() {
   const [paddle, setPaddle] = useState<Paddle>();
   const [isLoading, setIsLoading] = useState(false);
   const [selectedPack, setSelectedPack] = useState<string | null>(null);
@@ -68,7 +64,7 @@ export function BillingClient({ currentCredits = 0 }: BillingClientProps) {
 
   return (
     <div className="max-w-6xl mx-auto p-6">
-      <CreditManagement currentCredits={currentCredits} onBuyCreditClick={handleBuyCreditClick} />
+      <CreditManagement onBuyCreditClick={handleBuyCreditClick} />
 
       <CreditPlansDialog
         open={isDialogOpen}
