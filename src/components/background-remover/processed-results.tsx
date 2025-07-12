@@ -30,7 +30,7 @@ export function ProcessedResults({ processedImages, multipleMode }: ProcessedRes
     const link = document.createElement('a');
     link.href = url;
     link.download = filename;
-    link.target = '_blank'; // Open in a new tab
+    link.target = '_blank';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -78,41 +78,46 @@ export function ProcessedResults({ processedImages, multipleMode }: ProcessedRes
   }
 
   return (
-    <Card className="overflow-hidden bg-card/80 backdrop-blur-sm border shadow-xl">
-      <CardHeader className="pb-4">
+    <Card className="overflow-hidden bg-card/80 backdrop-blur-sm border shadow-lg">
+      <CardHeader className="pb-1 pt-2">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-success rounded-lg flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-success-foreground" />
+          <div className="flex items-center gap-1">
+            <div className="w-5 h-5 bg-gradient-success rounded-md flex items-center justify-center">
+              <Sparkles className="w-2.5 h-2.5 text-success-foreground" />
             </div>
             <div>
-              <CardTitle className="text-xl font-semibold">✨ Magic Complete!</CardTitle>
-              <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                {processedImages.length} image{processedImages.length > 1 ? 's' : ''} processed
-                successfully
+              <CardTitle className="text-sm font-semibold">✨ Done!</CardTitle>
+              <p className="text-xs text-gray-600 dark:text-gray-300">
+                {processedImages.length} processed
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             {!multipleMode && processedImages.length === 1 && (
-              <div className="flex gap-1">
+              <div className="flex gap-0.5">
                 <Button
                   variant={imageView === 'side-by-side' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setImageView('side-by-side')}
-                  className={imageView === 'side-by-side' ? 'bg-primary hover:bg-primary/90' : ''}
+                  className={cn(
+                    'h-6 px-1.5 text-xs',
+                    imageView === 'side-by-side' ? 'bg-primary hover:bg-primary/90' : ''
+                  )}
                 >
-                  <Eye className="w-4 h-4 mr-1" />
+                  <Eye className="w-2.5 h-2.5 mr-0.5" />
                   Split
                 </Button>
                 <Button
                   variant={imageView === 'overlay' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setImageView('overlay')}
-                  className={imageView === 'overlay' ? 'bg-primary hover:bg-primary/90' : ''}
+                  className={cn(
+                    'h-6 px-1.5 text-xs',
+                    imageView === 'overlay' ? 'bg-primary hover:bg-primary/90' : ''
+                  )}
                 >
-                  <EyeOff className="w-4 h-4 mr-1" />
+                  <EyeOff className="w-2.5 h-2.5 mr-0.5" />
                   Overlay
                 </Button>
               </div>
@@ -123,98 +128,57 @@ export function ProcessedResults({ processedImages, multipleMode }: ProcessedRes
                 variant="outline"
                 onClick={downloadAllAsZip}
                 disabled={isDownloadingZip}
-                className="bg-card/50 hover:bg-card/80 border-border hover:border-primary transition-all duration-300"
+                size="sm"
+                className="bg-card/50 hover:bg-card/80 border-border hover:border-primary transition-all duration-200 h-6 px-1.5 text-xs"
               >
-                <Archive className="h-4 w-4 mr-2" />
-                {isDownloadingZip ? 'Creating ZIP...' : 'Download All'}
+                <Archive className="h-2.5 w-2.5 mr-0.5" />
+                {isDownloadingZip ? 'ZIP...' : 'All'}
               </Button>
             )}
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-8">
+      <CardContent className="space-y-3 px-3 pb-3">
         {processedImages.map((result, index) => (
           <div
             key={index}
-            className="space-y-6 animate-in fade-in-0 duration-700"
-            style={{ animationDelay: `${index * 200}ms` }}
+            className="space-y-2 animate-in fade-in-0 duration-300"
+            style={{ animationDelay: `${index * 50}ms` }}
           >
             {!multipleMode && imageView === 'overlay' ? (
-              // Overlay view for single image
-              <div className="relative max-w-3xl mx-auto">
+              <div className="relative max-w-xl mx-auto">
                 <div
-                  className="aspect-[4/3] rounded-2xl overflow-hidden border-2 shadow-2xl hover:shadow-3xl transition-all duration-500 cursor-pointer"
+                  className="aspect-[4/3] rounded-md overflow-hidden border shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer"
                   onMouseEnter={() => setHoveredIndex(index)}
                   onMouseLeave={() => setHoveredIndex(null)}
                 >
-                  <div className="relative w-full h-full">
-                    <img
-                      src={result.originalUrl || '/placeholder.svg'}
-                      alt="Original"
-                      className="absolute inset-0 w-full h-full object-cover"
-                    />
-                    <div
-                      className={cn(
-                        'absolute inset-0 w-full h-full transition-opacity duration-500',
-                        hoveredIndex === index ? 'opacity-0' : 'opacity-100'
-                      )}
-                      style={{
-                        backgroundImage: `var(--checkerboard)`,
-                        backgroundSize: '20px 20px',
-                      }}
-                    >
-                      <img
-                        src={result.processedUrl || '/placeholder.svg'}
-                        alt="Processed"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  </div>
+                  <img
+                    src={
+                      hoveredIndex === index
+                        ? result.originalUrl
+                        : result.processedUrl || '/placeholder.svg'
+                    }
+                    alt={hoveredIndex === index ? 'Original' : 'Processed'}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
 
-                <div className="absolute top-4 left-4 bg-background/70 backdrop-blur-sm text-foreground px-4 py-2 rounded-full text-sm font-medium border">
-                  <Eye className="w-4 h-4 inline mr-2" />
-                  Hover to see original
-                </div>
-
-                <div className="absolute top-4 right-4 bg-success/90 backdrop-blur-sm text-success-foreground px-4 py-2 rounded-full text-sm font-medium">
-                  <Zap className="w-4 h-4 inline mr-2" />
-                  Background Removed
+                <div className="absolute top-1 left-1 bg-background/80 backdrop-blur-sm text-foreground px-1.5 py-0.5 rounded-full text-xs font-medium border">
+                  <Eye className="w-2.5 h-2.5 inline mr-0.5" />
+                  Hover
                 </div>
               </div>
             ) : (
-              // Side by side view
-              <div className="grid gap-8 lg:grid-cols-2">
-                {/* Original Image */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-6 h-6 bg-muted-foreground/20 rounded-lg flex items-center justify-center">
-                      <svg
-                        className="w-3 h-3 text-muted-foreground"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                        />
-                      </svg>
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                      Original
-                    </h3>
-                    <Badge variant="secondary" className="bg-muted text-muted-foreground">
-                      Before
-                    </Badge>
-                  </div>
+              <div className="grid gap-2 lg:grid-cols-2">
+                <div className="space-y-1">
+                  <Badge variant="outline" className="text-xs h-5 px-1.5">
+                    Original
+                  </Badge>
 
                   <div
                     className={cn(
-                      'rounded-2xl overflow-hidden border-2 shadow-xl hover:shadow-2xl transition-all duration-500 group cursor-pointer',
+                      'rounded-md overflow-hidden border shadow-md hover:shadow-lg transition-all duration-200 group cursor-pointer',
                       multipleMode ? 'aspect-square' : 'aspect-[4/3]',
                       'border-border'
                     )}
@@ -222,69 +186,53 @@ export function ProcessedResults({ processedImages, multipleMode }: ProcessedRes
                     <img
                       src={result.originalUrl || '/placeholder.svg'}
                       alt={`Original ${index + 1}`}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                     />
                   </div>
                 </div>
 
-                {/* Processed Image */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-6 h-6 bg-gradient-success rounded-lg flex items-center justify-center">
-                      <Sparkles className="w-3 h-3 text-success-foreground" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                      AI Enhanced
-                    </h3>
-                    <Badge variant="secondary" className="bg-success-50 text-success">
-                      After
-                    </Badge>
-                  </div>
+                <div className="space-y-1">
+                  <Badge variant="default" className="text-xs h-5 px-1.5 bg-success">
+                    Processed
+                  </Badge>
 
                   <div
                     className={cn(
-                      'rounded-2xl overflow-hidden border-2 shadow-xl hover:shadow-2xl transition-all duration-500 group cursor-pointer',
+                      'rounded-md overflow-hidden border shadow-md hover:shadow-lg transition-all duration-200 group cursor-pointer relative',
                       multipleMode ? 'aspect-square' : 'aspect-[4/3]',
-                      'border-success/30'
+                      'border-border'
                     )}
                     style={{
                       backgroundImage: `var(--checkerboard)`,
-                      backgroundSize: '20px 20px',
+                      backgroundSize: '15px 15px',
                     }}
                   >
                     <img
                       src={result.processedUrl || '/placeholder.svg'}
                       alt={`Processed ${index + 1}`}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                     />
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Stats and Download */}
-            <div className="flex items-center justify-between p-6 bg-gradient-to-r from-primary/5 to-success/5 rounded-2xl border border-primary/20">
-              <div className="flex items-center gap-6">
+            <div className="flex items-center justify-between p-2 bg-gradient-to-r from-primary/5 to-success/5 rounded-md border border-primary/20">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 {result.processingTime && (
-                  <div className="flex items-center gap-2">
-                    <Zap className="w-4 h-4 text-primary" />
-                    <span className="text-sm font-medium text-foreground">
-                      Processed in {(result.processingTime / 1000).toFixed(1)}s
-                    </span>
-                  </div>
-                )}
-                {result.imageId && (
-                  <div className="text-xs text-muted-foreground font-mono bg-muted/50 px-2 py-1 rounded">
-                    ID: {result.imageId}
+                  <div className="flex items-center gap-1">
+                    <Zap className="w-3 h-3" />
+                    <span>{(result.processingTime / 1000).toFixed(1)}s</span>
                   </div>
                 )}
               </div>
 
               <Button
                 onClick={() => downloadImage(result.processedUrl, `bg-removed-${index + 1}.png`)}
-                className="bg-gradient-primary hover:opacity-90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300"
+                size="sm"
+                className="bg-gradient-primary hover:opacity-90 text-primary-foreground shadow-md hover:shadow-lg transition-all duration-200 h-6 px-2 text-xs"
               >
-                <Download className="h-4 w-4 mr-2" />
+                <Download className="h-2.5 w-2.5 mr-1" />
                 Download
               </Button>
             </div>

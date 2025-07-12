@@ -1,4 +1,3 @@
-import { IconScreenshot } from '@tabler/icons-react';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
@@ -31,8 +30,8 @@ export default async function SignInPage() {
           <CardHeader className="text-center pb-4">
             {/* Logo/Icon */}
             <div className="flex items-center justify-center mb-4">
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                <IconScreenshot className="h-6 w-6 text-primary" />
+              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                <span className="text-primary-foreground font-bold text-xl">BG</span>
               </div>
             </div>
 

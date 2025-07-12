@@ -4,9 +4,8 @@ import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
 
-import { CreditDisplay } from '@/components/ui/credit-display';
-import { CreditErrorAlert } from '@/components/ui/credit-error-alert';
-import { LowCreditWarning } from '@/components/ui/low-credit-warning';
+import { CreditErrorAlert } from '@/components/background-remover/credit-error-alert';
+import { LowCreditWarning } from '@/components/background-remover/low-credit-warning';
 import { useAuth } from '@/hooks/use-auth-queries';
 
 import { FilePreview } from './file-preview';
@@ -191,54 +190,28 @@ export default function BackgroundRemover() {
   }, [router]);
 
   return (
-    <div className="min-h-screen w-full bg-gradient-page dark:bg-gradient-page-dark">
-      <div className="container mx-auto px-4 py-12">
-        <div className="max-w-7xl mx-auto space-y-12">
-          {/* Header */}
-          <div className="text-center space-y-6 animate-in fade-in-0 duration-1000">
-            <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
-              AI Background Remover
-            </h1>
-            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
-              Remove backgrounds from your images instantly with AI-powered precision. Perfect for
-              e-commerce, social media, and professional photography.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span>High-Quality AI Processing</span>
+    <div className="w-full bg-gradient-page dark:bg-gradient-page-dark">
+      <div className="container mx-auto px-2 py-2">
+        <div className="max-w-4xl mx-auto space-y-2">
+          {/* Compact Header with Mode Toggle */}
+          <div className="text-center space-y-2 animate-in fade-in-0 duration-700">
+            <div className="flex items-center justify-center flex-col gap-3">
+              <div className="w-20 h-20 bg-primary rounded-lg flex items-center justify-center my-5">
+                <span className="text-primary-foreground font-bold text-4xl">BG</span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <span>All Image Formats Supported</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                <span>Instant Results</span>
-              </div>
-            </div>
-
-            {/* Credit Display */}
-            <div className="flex justify-center">
-              <CreditDisplay credits={credits} isLoading={!user} />
+              <ModeToggle multipleMode={multipleMode} onToggleMode={toggleMode} />
             </div>
           </div>
 
-          {/* Mode Toggle */}
-          <div className="flex justify-center animate-in fade-in-0 duration-1000 delay-200">
-            <ModeToggle multipleMode={multipleMode} onToggleMode={toggleMode} />
-          </div>
-
-          {/* Low Credit Warning */}
+          {/* Compact Alerts */}
           {user && credits < 5 && !showCreditError && (
-            <div className="animate-in slide-in-from-bottom-4 duration-500">
-              <LowCreditWarning credits={credits} />
+            <div className="animate-in slide-in-from-bottom-2 duration-300">
+              <LowCreditWarning />
             </div>
           )}
 
-          {/* Credit Error Alert */}
           {showCreditError && (
-            <div className="animate-in slide-in-from-bottom-4 duration-500">
+            <div className="animate-in slide-in-from-bottom-2 duration-300">
               <CreditErrorAlert
                 creditsNeeded={files.length}
                 creditsAvailable={credits}
@@ -247,9 +220,9 @@ export default function BackgroundRemover() {
             </div>
           )}
 
-          {/* Main Content */}
-          <div className="grid gap-8">
-            <div className="animate-in slide-in-from-bottom-4 duration-700 delay-300">
+          {/* Compact Main Content */}
+          <div className="space-y-2">
+            <div className="animate-in slide-in-from-bottom-2 duration-500">
               <FileUpload
                 files={files}
                 onFilesChange={onFilesChange}
@@ -259,7 +232,7 @@ export default function BackgroundRemover() {
             </div>
 
             {files.length > 0 && (
-              <div className="animate-in slide-in-from-bottom-4 duration-700 delay-500">
+              <div className="animate-in slide-in-from-bottom-2 duration-500 delay-100">
                 <FilePreview
                   files={files}
                   onRemoveFile={removeFile}
@@ -275,7 +248,7 @@ export default function BackgroundRemover() {
             )}
 
             {processedImages.length > 0 && (
-              <div className="animate-in slide-in-from-bottom-4 duration-700 delay-700">
+              <div className="animate-in slide-in-from-bottom-2 duration-500 delay-200">
                 <ProcessedResults processedImages={processedImages} multipleMode={multipleMode} />
               </div>
             )}

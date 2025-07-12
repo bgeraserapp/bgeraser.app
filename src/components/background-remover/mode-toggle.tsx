@@ -13,30 +13,30 @@ interface ModeToggleProps {
 
 export function ModeToggle({ multipleMode, onToggleMode }: ModeToggleProps) {
   return (
-    <Card className="p-2 bg-card/80 backdrop-blur-sm border shadow-lg">
-      <div className="flex items-center gap-2">
+    <Card className="p-1 bg-card/80 backdrop-blur-sm border shadow-lg">
+      <div className="flex items-center gap-1">
         <Button variant={!multipleMode ? 'default' : 'ghost'} size="lg" onClick={onToggleMode}>
-          <ImageIcon className="w-4 h-4 mr-2" />
-          Single Image
+          <ImageIcon className="w-3 h-3 mr-1" />
+          Single
           {!multipleMode && (
             <Badge
               variant="secondary"
-              className="ml-2 bg-primary-foreground/20 text-primary-foreground border-0"
+              className="ml-1 bg-primary-foreground/20 text-primary-foreground border-0 text-xs"
             >
-              Active
+              ●
             </Badge>
           )}
         </Button>
 
         <Button variant={multipleMode ? 'default' : 'ghost'} size="lg" onClick={onToggleMode}>
-          <Images className="w-4 h-4 mr-2" />
-          Multiple Images
+          <Images className="w-3 h-3 mr-1" />
+          Multiple
           {multipleMode && (
             <Badge
               variant="secondary"
-              className="ml-2 bg-primary-foreground/20 text-primary-foreground border-0"
+              className="ml-1 bg-primary-foreground/20 text-primary-foreground border-0 text-xs"
             >
-              Active
+              ●
             </Badge>
           )}
         </Button>

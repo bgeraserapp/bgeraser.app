@@ -25,7 +25,7 @@ function DashboardHeader() {
           <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
             <span className="text-primary-foreground font-bold text-lg">BG</span>
           </div>
-          <h1 className="text-2xl font-bold text-foreground">{AppConfig.name}</h1>
+          <h1 className="text-2xl font-bold text-foreground hidden sm:block">{AppConfig.name}</h1>
         </Link>
         <div className="flex items-center space-x-3">
           <div className="flex items-center gap-2 bg-primary/10 text-primary px-3 py-1.5 rounded-full text-sm font-medium">

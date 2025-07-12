@@ -69,61 +69,59 @@ export function FileUpload({ files, onFilesChange, multipleMode, onReset }: File
   });
 
   return (
-    <Card className="overflow-hidden bg-card/80 backdrop-blur-sm border shadow-xl">
-      <CardContent className="p-8">
+    <Card className="overflow-hidden bg-card/80 backdrop-blur-sm border shadow-lg">
+      <CardContent className="p-4">
         <div
           {...getRootProps()}
           className={cn(
-            'relative border-2 border-dashed rounded-2xl p-12 text-center transition-all duration-300 cursor-pointer group',
+            'relative border-2 border-dashed rounded-xl p-6 text-center transition-all duration-300 cursor-pointer group',
             isDragActive
-              ? 'border-primary bg-primary/5 scale-[1.02]'
+              ? 'border-primary bg-primary/5 scale-[1.01]'
               : files.length === 0
                 ? 'border-border hover:border-primary hover:bg-primary/5'
                 : 'border-success bg-success/5',
-            'min-h-[200px] flex flex-col items-center justify-center'
+            'min-h-[120px] flex flex-col items-center justify-center'
           )}
           onClick={open}
         >
           <input {...getInputProps()} />
 
           {files.length === 0 ? (
-            <div className="space-y-6">
+            <div className="space-y-3">
               <div className="relative">
-                <div className="w-20 h-20 mx-auto bg-gradient-primary rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-                  <Upload className="w-10 h-10 text-primary-foreground" />
+                <div className="w-12 h-12 mx-auto bg-gradient-primary rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  <Upload className="w-6 h-6 text-primary-foreground" />
                 </div>
-                <div className="absolute -top-2 -right-2">
-                  <Sparkles className="w-6 h-6 text-warning animate-pulse" />
+                <div className="absolute -top-1 -right-1">
+                  <Sparkles className="w-4 h-4 text-warning animate-pulse" />
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+              <div className="space-y-2">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">
                   Drop {multipleMode ? 'images' : 'an image'} here
                 </h3>
-                <p className="text-gray-600 dark:text-gray-300">
-                  Or click to select from your computer
-                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Or click to select files</p>
 
-                <div className="flex flex-wrap justify-center gap-2 mt-4">
-                  <Badge variant="secondary" className="bg-primary-50 text-primary">
-                    <Zap className="w-3 h-3 mr-1" />
-                    AI Powered
+                <div className="flex flex-wrap justify-center gap-1 mt-2">
+                  <Badge variant="secondary" className="bg-primary-50 text-primary text-xs">
+                    <Zap className="w-2 h-2 mr-1" />
+                    AI
                   </Badge>
-                  <Badge variant="secondary" className="bg-success-50 text-success">
-                    Max 10MB
+                  <Badge variant="secondary" className="bg-success-50 text-success text-xs">
+                    10MB Max
                   </Badge>
-                  <Badge variant="secondary" className="bg-info-50 text-info">
-                    PNG, JPG, WEBP
+                  <Badge variant="secondary" className="bg-info-50 text-info text-xs">
+                    PNG, JPG
                   </Badge>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="space-y-4">
-              <div className="w-16 h-16 mx-auto bg-success rounded-2xl flex items-center justify-center shadow-lg">
+            <div className="space-y-3">
+              <div className="w-10 h-10 mx-auto bg-success rounded-xl flex items-center justify-center shadow-lg">
                 <svg
-                  className="w-8 h-8 text-success-foreground"
+                  className="w-5 h-5 text-success-foreground"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -137,13 +135,13 @@ export function FileUpload({ files, onFilesChange, multipleMode, onReset }: File
                 </svg>
               </div>
 
-              <div className="space-y-2">
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+              <div className="space-y-1">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                   {files.length} image{files.length > 1 ? 's' : ''} ready
                 </h3>
-                <p className="text-gray-600 dark:text-gray-300">
+                <p className="text-sm text-gray-600 dark:text-gray-300">
                   {multipleMode && files.length < 10
-                    ? 'Add more images or process current selection'
+                    ? 'Add more or process current selection'
                     : 'Ready to process'}
                 </p>
               </div>
@@ -152,16 +150,20 @@ export function FileUpload({ files, onFilesChange, multipleMode, onReset }: File
                 <Button
                   variant="outline"
                   onClick={open}
-                  className="mt-4 bg-card/50 hover:bg-card/80 border-border hover:border-primary transition-all duration-300"
+                  size="sm"
+                  className="mt-2 bg-card/50 hover:bg-card/80 border-border hover:border-primary transition-all duration-300"
                 >
-                  <Upload className="w-4 h-4 mr-2" />
-                  Add More Images
+                  <Upload className="w-3 h-3 mr-1" />
+                  Add More
                 </Button>
               )}
 
               {multipleMode && files.length >= 10 && (
-                <Badge variant="outline" className="border-warning text-warning bg-warning-50">
-                  Maximum 10 images reached
+                <Badge
+                  variant="outline"
+                  className="border-warning text-warning bg-warning-50 text-xs"
+                >
+                  Max 10 images reached
                 </Badge>
               )}
             </div>

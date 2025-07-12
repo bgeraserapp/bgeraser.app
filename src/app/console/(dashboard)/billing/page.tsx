@@ -1,6 +1,7 @@
 import { CreditCardIcon, HistoryIcon } from 'lucide-react';
 import Link from 'next/link';
 
+import { LowCreditWarning } from '@/components/background-remover/low-credit-warning';
 import { BillingClient } from '@/components/billings';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,6 +31,7 @@ export default async function BillingPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            <LowCreditWarning showBuyButton={false} />
             <BillingClient />
           </CardContent>
         </Card>
