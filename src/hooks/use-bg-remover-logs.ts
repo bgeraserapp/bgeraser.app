@@ -72,7 +72,7 @@ export function useBgRemoverLogs(
         searchParams.set('status', status);
       }
 
-      const response = await fetch(`/api/bg-remover-logs?${searchParams}`);
+      const response = await fetch(`/api/models/bg-remover/logs?${searchParams}`);
       if (!response.ok) {
         throw new Error('Failed to fetch bg remover logs');
       }
@@ -88,7 +88,7 @@ export function useBgRemoverLog(id: string) {
   return useQuery({
     queryKey: bgRemoverLogsQueryKeys.detail(id),
     queryFn: async (): Promise<{ success: boolean; data: BgRemoverLogData }> => {
-      const response = await fetch(`/api/bg-remover-logs/${id}`);
+      const response = await fetch(`/api/models/bg-remover/logs/${id}`);
       if (!response.ok) {
         throw new Error('Failed to fetch bg remover log');
       }

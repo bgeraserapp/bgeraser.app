@@ -24,9 +24,12 @@ The application uses **Hono** as a lightweight web framework for all API routes 
 - **Main Handler**: `src/app/api/[[...route]]/route.ts` - Centralized API router with global auth middleware
 - **Route Organization**: Individual routes in `src/app/api/[[...route]]/routes/`
   - `/api/models/bg-remover` - Background removal processing
+  - `/api/models/bg-remover/logs` - Background removal logs with pagination
+  - `/api/models/bg-remover/logs/:id` - Specific background removal log
   - `/api/download-zip` - Bulk image download
   - `/api/payment` - Paddle payment integration
-  - `/api/transactions` - Billing history
+  - `/api/payment/transactions` - Billing transaction history
+  - `/api/payment/transactions/:id` - Specific transaction details
   - `/api/webhook` - Payment webhooks
   - `/api/health` - Health check
   - Better-auth authentication routes

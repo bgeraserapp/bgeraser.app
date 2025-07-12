@@ -1,21 +1,43 @@
 import { Hono } from 'hono';
+import { cors } from 'hono/cors';
+import { logger } from 'hono/logger';
+import { prettyJSON } from 'hono/pretty-json';
+import { requestId } from 'hono/request-id';
+import { timing } from 'hono/timing';
 import { handle } from 'hono/vercel';
 
 import { auth } from '@/lib/auth';
 import { HonoContext } from '@/types/hono';
 
+// Import route modules
 import betterAuthRoute from './routes/better-auth';
-import { bgRemoverRoute } from './routes/bg-remover';
-import { bgRemoverLogsRoute } from './routes/bg-remover-logs';
+import { bgRemoverModelsRoute } from './routes/bg-remover-models';
 import { creditsRoute } from './routes/credits';
 import { downloadZipRoute } from './routes/download-zip';
 import { healthRoute } from './routes/health';
-import { paymentRouter } from './routes/payment';
-import { transactionsRouter } from './routes/transactions';
+import { paymentsRoute } from './routes/payments';
 import { webhookRouter } from './routes/webhook';
 
+// Create Hono app with base path
 const app = new Hono<HonoContext>().basePath('/api');
 
+// Global middleware
+app.use('*', logger());
+app.use('*', prettyJSON());
+app.use('*', requestId());
+app.use('*', timing());
+app.use(
+  '*',
+  cors({
+    origin:
+      process.env.NODE_ENV === 'production'
+        ? ['https://bgeraser.app', 'https://console.bgeraser.app']
+        : ['http://localhost:3000'],
+    credentials: true,
+  })
+);
+
+// Authentication middleware
 app.use('*', async (c, next) => {
   const session = await auth.api.getSession({ headers: c.req.raw.headers });
 
@@ -30,14 +52,57 @@ app.use('*', async (c, next) => {
   return next();
 });
 
+// Global error handler
+app.onError((err, c) => {
+  console.error('API Error:', err);
+  return c.json(
+    {
+      error: 'Internal Server Error',
+      message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong',
+      timestamp: new Date().toISOString(),
+      requestId: c.get('requestId'),
+    },
+    500
+  );
+});
+
+// 404 handler
+app.notFound((c) => {
+  return c.json(
+    {
+      error: 'Not Found',
+      message: `Route ${c.req.path} not found`,
+      timestamp: new Date().toISOString(),
+    },
+    404
+  );
+});
+
+// Authentication routes
 app.route('/', betterAuthRoute);
-app.route('/bg-remover-logs', bgRemoverLogsRoute);
-app.route('/credits', creditsRoute);
-app.route('/download-zip', downloadZipRoute);
+
+// System routes
 app.route('/health', healthRoute);
-app.route('/models/bg-remover', bgRemoverRoute);
-app.route('/payment', paymentRouter);
-app.route('/transactions', transactionsRouter);
+
+// User management routes
+app.route('/credits', creditsRoute);
+
+// Background remover routes (includes both processing and logs)
+// GET /api/models/bg-remover/logs - Get logs with pagination
+// GET /api/models/bg-remover/logs/:id - Get specific log
+// POST /api/models/bg-remover - Process images
+app.route('/models/bg-remover', bgRemoverModelsRoute);
+
+// File management routes
+app.route('/download-zip', downloadZipRoute);
+
+// Payment routes (includes transactions)
+// POST /api/payment - Create payment
+// GET /api/payment/transactions - Get transaction history
+// GET /api/payment/transactions/:id - Get specific transaction
+app.route('/payment', paymentsRoute);
+
+// Webhook routes
 app.route('/webhook', webhookRouter);
 
 export const dynamic = 'force-dynamic';

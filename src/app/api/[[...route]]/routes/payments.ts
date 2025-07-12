@@ -2,7 +2,9 @@ import { Hono } from 'hono';
 import { Types } from 'mongoose';
 
 import { connectDB } from '@/db';
-import { ITransactionState, Transaction } from '@/db/models';
+import { ITransactionState, Transaction, User } from '@/db/models';
+import paddle from '@/lib/paddle';
+import creditPricingData from '@/lib/pricing';
 import { HonoContext } from '@/types/hono';
 
 import { requireAuth } from '../middleware';
@@ -12,9 +14,70 @@ const app = new Hono<HonoContext>();
 // Apply authentication middleware to all routes
 app.use('*', requireAuth);
 
-app.get('/', async (c) => {
+// Create payment transaction
+app.post('/', async (c) => {
   try {
-    const user = c.get('user')!; // User is guaranteed to exist due to middleware
+    const { packId } = await c.req.json();
+
+    if (!packId) {
+      return c.json({ success: false, message: 'Pack ID is required' }, 400);
+    }
+
+    const plan = creditPricingData.find((p) => p.id === packId);
+    if (!plan) {
+      return c.json({ success: false, message: 'Invalid plan ID' }, 400);
+    }
+
+    const user = c.get('user');
+    if (!user) {
+      return c.json({ success: false, message: 'User not authenticated' }, 401);
+    }
+
+    let paddleCustomerId = user.paddleCustomerId;
+
+    if (!paddleCustomerId) {
+      const [existingCustomer] = await paddle.customers.list({ email: [user.email] }).next();
+
+      paddleCustomerId =
+        existingCustomer?.id ??
+        (
+          await paddle.customers.create({
+            email: user.email,
+            name: user.name,
+          })
+        ).id;
+    }
+
+    await connectDB();
+    await User.findByIdAndUpdate(user.id, {
+      $set: { paddleCustomerId },
+    });
+
+    const transaction = await paddle.transactions.create({
+      customerId: paddleCustomerId,
+      items: [
+        {
+          priceId: plan.paddlePriceId,
+          quantity: 1,
+        },
+      ],
+    });
+
+    return c.json({
+      success: true,
+      message: 'Transaction created successfully',
+      transaction,
+    });
+  } catch (error) {
+    console.error('Error processing payment:', error);
+    return c.json({ success: false, message: 'Internal server error' }, 500);
+  }
+});
+
+// Get user transactions history
+app.get('/transactions', async (c) => {
+  try {
+    const user = c.get('user')!;
 
     await connectDB();
 
@@ -61,7 +124,7 @@ app.get('/', async (c) => {
     );
 
     const totalSpent = completedTransactions.reduce((sum, transaction) => {
-      return sum + parseFloat(transaction.price.amount); // Amount is already in cents
+      return sum + parseFloat(transaction.price.amount);
     }, 0);
 
     const totalCredits = completedTransactions.reduce((sum, transaction) => {
@@ -75,7 +138,7 @@ app.get('/', async (c) => {
       transactions: transformedTransactions,
       total: transformedTransactions.length,
       statistics: {
-        totalSpent: totalSpent, // In cents
+        totalSpent: totalSpent,
         totalCredits: totalCredits,
         completedTransactions: completedCount,
       },
@@ -92,4 +155,32 @@ app.get('/', async (c) => {
   }
 });
 
-export { app as transactionsRouter };
+// Get transaction by ID
+app.get('/transactions/:id', async (c) => {
+  try {
+    const user = c.get('user')!;
+    const transactionId = c.req.param('id');
+
+    await connectDB();
+
+    const userObjectId = new Types.ObjectId(user.id);
+    const transaction = await Transaction.findOne({
+      transactionId,
+      userId: userObjectId,
+    }).lean();
+
+    if (!transaction) {
+      return c.json({ error: 'Transaction not found' }, 404);
+    }
+
+    return c.json({
+      success: true,
+      data: transaction,
+    });
+  } catch (error) {
+    console.error('Error fetching transaction:', error);
+    return c.json({ error: 'Failed to fetch transaction' }, 500);
+  }
+});
+
+export { app as paymentsRoute };

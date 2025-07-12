@@ -74,7 +74,7 @@ interface TransactionResponse {
 type FilterStatus = 'all' | 'draft' | 'paid' | 'completed' | 'cancelled' | 'failed';
 
 const fetchTransactions = async (): Promise<TransactionResponse> => {
-  const response = await fetch('/api/transactions');
+  const response = await fetch('/api/payment/transactions');
 
   if (!response.ok) {
     throw new Error('Failed to fetch transactions');
