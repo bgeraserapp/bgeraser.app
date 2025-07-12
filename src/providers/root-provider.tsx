@@ -5,7 +5,7 @@ import { NuqsAdapter } from 'nuqs/adapters/next/app';
 
 import ReactQueryProvider from './_react-query-provider';
 import { ThemeProvider } from './_theme-provider';
-import { AuthProvider } from './auth-provider';
+// No longer need AuthProvider since we're using React Query directly
 interface RootProviderProps {
   children: React.ReactNode;
 }
@@ -13,7 +13,7 @@ interface RootProviderProps {
 export default async function RootProvider({ children }: RootProviderProps) {
   const messages = await getMessages();
   const headerList = await headers();
-  const domain = headerList.get('x-current-domain');
+  const _domain = headerList.get('x-current-domain');
   return (
     <NextIntlClientProvider messages={messages}>
       <ReactQueryProvider>
@@ -24,11 +24,7 @@ export default async function RootProvider({ children }: RootProviderProps) {
             enableSystem
             disableTransitionOnChange
           >
-            {!['console', 'docs'].includes(domain || '') ? (
-              <>{children}</>
-            ) : (
-              <AuthProvider>{children}</AuthProvider>
-            )}
+            {children}
           </ThemeProvider>
         </NuqsAdapter>
       </ReactQueryProvider>

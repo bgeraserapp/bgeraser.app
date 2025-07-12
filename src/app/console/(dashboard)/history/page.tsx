@@ -1,8 +1,16 @@
 'use client';
 
 import { format } from 'date-fns';
-import { Download, Eye, Filter, HistoryIcon, Image as ImageIcon, Search } from 'lucide-react';
-import Image from 'next/image';
+import {
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  Eye,
+  Filter,
+  HistoryIcon,
+  Image as ImageIcon,
+  Loader2,
+} from 'lucide-react';
 import { useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
@@ -14,7 +22,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
+import S3Image from '@/components/ui/s3-image';
 import {
   Table,
   TableBody,
@@ -23,105 +31,43 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { type BgRemoverLogData, useBgRemoverLogs } from '@/hooks/use-bg-remover-logs';
 
-// Mock data for demonstration
-const mockHistoryData = [
-  {
-    id: 'bg-001',
-    originalImage: 'https://via.placeholder.com/150x150?text=Original+1',
-    processedImage: 'https://via.placeholder.com/150x150?text=Processed+1',
-    filename: 'portrait-photo.jpg',
-    processedAt: new Date('2024-01-15T10:30:00'),
-    processingTime: 2.3,
-    creditsUsed: 1,
-    status: 'completed',
-    fileSize: '2.4 MB',
-  },
-  {
-    id: 'bg-002',
-    originalImage: 'https://via.placeholder.com/150x150?text=Original+2',
-    processedImage: 'https://via.placeholder.com/150x150?text=Processed+2',
-    filename: 'product-image.png',
-    processedAt: new Date('2024-01-14T15:45:00'),
-    processingTime: 1.8,
-    creditsUsed: 1,
-    status: 'completed',
-    fileSize: '1.2 MB',
-  },
-  {
-    id: 'bg-003',
-    originalImage: 'https://via.placeholder.com/150x150?text=Original+3',
-    processedImage: 'https://via.placeholder.com/150x150?text=Processed+3',
-    filename: 'team-photo.jpg',
-    processedAt: new Date('2024-01-13T09:15:00'),
-    processingTime: 3.1,
-    creditsUsed: 1,
-    status: 'completed',
-    fileSize: '4.1 MB',
-  },
-  {
-    id: 'bg-004',
-    originalImage: 'https://via.placeholder.com/150x150?text=Original+4',
-    processedImage: null,
-    filename: 'large-image.jpg',
-    processedAt: new Date('2024-01-12T14:20:00'),
-    processingTime: 0,
-    creditsUsed: 0,
-    status: 'failed',
-    fileSize: '15.2 MB',
-  },
-  {
-    id: 'bg-005',
-    originalImage: 'https://via.placeholder.com/150x150?text=Original+5',
-    processedImage: 'https://via.placeholder.com/150x150?text=Processed+5',
-    filename: 'headshot.png',
-    processedAt: new Date('2024-01-11T11:00:00'),
-    processingTime: 1.5,
-    creditsUsed: 1,
-    status: 'completed',
-    fileSize: '890 KB',
-  },
-];
-
-type _HistoryItem = (typeof mockHistoryData)[0];
-type FilterStatus = 'all' | 'completed' | 'failed' | 'processing';
+type FilterStatus = 'all' | 'success' | 'error' | 'processing';
 
 export default function HistoryPage() {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<FilterStatus>('all');
   const [selectedImage, setSelectedImage] = useState<{
     original: string;
     processed?: string;
+    logData: BgRemoverLogData;
   } | null>(null);
 
-  const filteredData = mockHistoryData.filter((item) => {
-    const matchesSearch =
-      item.filename.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.id.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || item.status === statusFilter;
-    return matchesSearch && matchesStatus;
+  const limit = 10;
+  const { data, isLoading, error } = useBgRemoverLogs({
+    page,
+    limit,
+    status: statusFilter === 'all' ? undefined : statusFilter,
   });
 
-  const totalCreditsUsed = mockHistoryData.reduce((sum, item) => sum + item.creditsUsed, 0);
-  const completedProcesses = mockHistoryData.filter((item) => item.status === 'completed').length;
-  const averageProcessingTime =
-    mockHistoryData
-      .filter((item) => item.status === 'completed')
-      .reduce((sum, item) => sum + item.processingTime, 0) / completedProcesses;
+  const logs = data?.data?.logs || [];
+  const pagination = data?.data?.pagination;
+  const statistics = data?.data?.statistics;
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'completed':
+      case 'success':
         return (
           <Badge
             variant="secondary"
             className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
           >
-            Completed
+            Success
           </Badge>
         );
-      case 'failed':
-        return <Badge variant="destructive">Failed</Badge>;
+      case 'error':
+        return <Badge variant="destructive">Error</Badge>;
       case 'processing':
         return (
           <Badge
@@ -136,6 +82,13 @@ export default function HistoryPage() {
     }
   };
 
+  const formatFileSize = (bytes?: number) => {
+    if (!bytes) return 'Unknown';
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${sizes[i]}`;
+  };
+
   const downloadImage = (url: string, filename: string) => {
     const link = document.createElement('a');
     link.href = url;
@@ -145,61 +98,96 @@ export default function HistoryPage() {
     document.body.removeChild(link);
   };
 
+  if (error) {
+    return (
+      <div className="max-w-6xl mx-auto p-3">
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <ImageIcon className="w-12 h-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Error loading history</h3>
+            <p className="text-muted-foreground">Please try refreshing the page</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-6xl mx-auto p-3">
-      {/* Compact Header with Stats */}
+      {/* Header with Stats */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <HistoryIcon className="w-5 h-5 text-primary" />
-          <h1 className="text-xl font-bold text-foreground">History</h1>
+          <h1 className="text-xl font-bold text-foreground">Processing History</h1>
         </div>
-        <div className="flex gap-4 text-sm">
-          <div className="text-center">
-            <div className="font-bold text-foreground">{totalCreditsUsed}</div>
-            <div className="text-xs text-muted-foreground">Credits</div>
+        {!isLoading && statistics && (
+          <div className="flex gap-4 text-sm">
+            <div className="text-center">
+              <div className="font-bold text-foreground">{statistics.totalProcesses}</div>
+              <div className="text-xs text-muted-foreground">Total</div>
+            </div>
+            <div className="text-center">
+              <div className="font-bold text-foreground">{statistics.completedProcesses}</div>
+              <div className="text-xs text-muted-foreground">Success</div>
+            </div>
+            <div className="text-center">
+              <div className="font-bold text-foreground">
+                {(statistics.averageProcessingTime / 1000).toFixed(1)}s
+              </div>
+              <div className="text-xs text-muted-foreground">Avg Time</div>
+            </div>
+            <div className="text-center">
+              <div className="font-bold text-foreground">{statistics.successRate.toFixed(1)}%</div>
+              <div className="text-xs text-muted-foreground">Success Rate</div>
+            </div>
           </div>
-          <div className="text-center">
-            <div className="font-bold text-foreground">{completedProcesses}</div>
-            <div className="text-xs text-muted-foreground">Processed</div>
-          </div>
-          <div className="text-center">
-            <div className="font-bold text-foreground">{averageProcessingTime.toFixed(1)}s</div>
-            <div className="text-xs text-muted-foreground">Avg Time</div>
-          </div>
-        </div>
+        )}
       </div>
 
-      {/* Compact Filters and Table */}
+      {/* Filters and Table */}
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg">Processing History</CardTitle>
+            <CardTitle className="text-lg">Recent Activity</CardTitle>
             <div className="flex gap-2">
-              <div className="relative">
-                <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground w-3 h-3" />
-                <Input
-                  placeholder="Search..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-7 w-32 h-8 text-sm"
-                />
-              </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" disabled={isLoading}>
                     <Filter className="mr-1 h-3 w-3" />
-                    {statusFilter === 'all' ? 'All' : statusFilter}
+                    {statusFilter === 'all' ? 'All Status' : statusFilter}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                  <DropdownMenuItem onClick={() => setStatusFilter('all')}>All</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setStatusFilter('completed')}>
-                    Completed
+                  <DropdownMenuItem
+                    onClick={() => {
+                      setStatusFilter('all');
+                      setPage(1);
+                    }}
+                  >
+                    All Status
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setStatusFilter('failed')}>
-                    Failed
+                  <DropdownMenuItem
+                    onClick={() => {
+                      setStatusFilter('success');
+                      setPage(1);
+                    }}
+                  >
+                    Success
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setStatusFilter('processing')}>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      setStatusFilter('error');
+                      setPage(1);
+                    }}
+                  >
+                    Error
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      setStatusFilter('processing');
+                      setPage(1);
+                    }}
+                  >
                     Processing
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -208,140 +196,199 @@ export default function HistoryPage() {
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[60px]">Preview</TableHead>
-                  <TableHead className="w-[80px]">ID</TableHead>
-                  <TableHead>Filename</TableHead>
-                  <TableHead className="w-[80px]">Status</TableHead>
-                  <TableHead className="w-[80px]">Time</TableHead>
-                  <TableHead className="w-[60px]">Credits</TableHead>
-                  <TableHead className="w-[100px]">Date</TableHead>
-                  <TableHead className="w-[80px] text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredData.length === 0 ? (
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-6 h-6 animate-spin text-primary mr-2" />
+              <span className="text-muted-foreground">Loading history...</span>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8">
-                      <div className="text-muted-foreground">
-                        <ImageIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                        <p>No images found matching your criteria</p>
-                      </div>
-                    </TableCell>
+                    <TableHead className="w-[80px]">Preview</TableHead>
+                    <TableHead className="w-[120px]">Request ID</TableHead>
+                    <TableHead>Model</TableHead>
+                    <TableHead className="w-[80px]">Status</TableHead>
+                    <TableHead className="w-[80px]">Time</TableHead>
+                    <TableHead className="w-[60px]">Credits</TableHead>
+                    <TableHead className="w-[100px]">Size</TableHead>
+                    <TableHead className="w-[120px]">Date</TableHead>
+                    <TableHead className="w-[100px] text-right">Actions</TableHead>
                   </TableRow>
-                ) : (
-                  filteredData.map((item) => (
-                    <TableRow key={item.id} className="hover:bg-muted/50">
-                      <TableCell>
-                        <div className="flex gap-1">
-                          <div className="relative w-8 h-8 rounded overflow-hidden border">
-                            <Image
-                              src={item.originalImage}
-                              alt="Original"
-                              fill
-                              className="object-cover"
-                            />
-                          </div>
-                          {item.processedImage && (
-                            <div className="relative w-8 h-8 rounded overflow-hidden border">
-                              <Image
-                                src={item.processedImage}
-                                alt="Processed"
-                                fill
-                                className="object-cover"
-                              />
-                            </div>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="font-mono text-xs">{item.id}</TableCell>
-                      <TableCell>
-                        <div>
-                          <p className="text-sm font-medium truncate max-w-[120px]">
-                            {item.filename}
-                          </p>
-                          <p className="text-xs text-muted-foreground">{item.fileSize}</p>
-                        </div>
-                      </TableCell>
-                      <TableCell>{getStatusBadge(item.status)}</TableCell>
-                      <TableCell>
-                        {item.processingTime > 0 ? `${item.processingTime}s` : '-'}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          <svg
-                            className="w-4 h-4 text-primary"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
-                            />
-                          </svg>
-                          {item.creditsUsed}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <p className="text-xs">{format(item.processedAt, 'MMM dd')}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {format(item.processedAt, 'HH:mm')}
-                        </p>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              setSelectedImage({
-                                original: item.originalImage,
-                                processed: item.processedImage || undefined,
-                              })
-                            }
-                          >
-                            <Eye className="w-3 h-3" />
-                          </Button>
-                          {item.processedImage && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() =>
-                                downloadImage(item.processedImage!, `processed-${item.filename}`)
-                              }
-                            >
-                              <Download className="w-3 h-3" />
-                            </Button>
+                </TableHeader>
+                <TableBody>
+                  {logs.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={9} className="text-center py-8">
+                        <div className="text-muted-foreground">
+                          <ImageIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                          <p>No processing history found</p>
+                          {statusFilter !== 'all' && (
+                            <p className="text-sm mt-1">Try adjusting your filter</p>
                           )}
                         </div>
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
+                  ) : (
+                    logs.map((log) => (
+                      <TableRow key={log._id} className="hover:bg-muted/50">
+                        <TableCell>
+                          <div className="flex gap-1">
+                            {log.originalImageUrl && (
+                              <div className="relative w-8 h-8 rounded overflow-hidden border">
+                                <S3Image
+                                  src={log.originalImageUrl}
+                                  alt="Original"
+                                  fill
+                                  className="object-cover"
+                                />
+                              </div>
+                            )}
+                            {log.processedImageUrl && (
+                              <div className="relative w-8 h-8 rounded overflow-hidden border">
+                                <S3Image
+                                  src={log.processedImageUrl}
+                                  alt="Processed"
+                                  fill
+                                  className="object-cover"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className="font-mono text-xs">{log.requestId}</TableCell>
+                        <TableCell className="text-sm">{log.modelName}</TableCell>
+                        <TableCell>{getStatusBadge(log.status)}</TableCell>
+                        <TableCell>
+                          {log.processingTime ? `${(log.processingTime / 1000).toFixed(1)}s` : '-'}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1">
+                            <svg
+                              className="w-3 h-3 text-primary"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
+                              />
+                            </svg>
+                            {log.creditsUsed}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-xs">
+                          {formatFileSize(log.imageSize)}
+                          {log.imageFormat && (
+                            <div className="text-muted-foreground">{log.imageFormat}</div>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <p className="text-xs">
+                            {format(new Date(log.createdAt), 'MMM dd, yyyy')}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {format(new Date(log.createdAt), 'HH:mm')}
+                          </p>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-1">
+                            {(log.originalImageUrl || log.processedImageUrl) && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() =>
+                                  setSelectedImage({
+                                    original: log.originalImageUrl || '',
+                                    processed: log.processedImageUrl || undefined,
+                                    logData: log,
+                                  })
+                                }
+                              >
+                                <Eye className="w-3 h-3" />
+                              </Button>
+                            )}
+                            {log.processedImageUrl && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() =>
+                                  downloadImage(
+                                    log.processedImageUrl!,
+                                    `processed-${log.requestId}.png`
+                                  )
+                                }
+                              >
+                                <Download className="w-3 h-3" />
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </CardContent>
+
+        {/* Pagination */}
+        {pagination && pagination.totalPages > 1 && (
+          <div className="flex items-center justify-between px-4 py-3 border-t">
+            <div className="text-sm text-muted-foreground">
+              Showing {(pagination.page - 1) * pagination.limit + 1} to{' '}
+              {Math.min(pagination.page * pagination.limit, pagination.totalCount)} of{' '}
+              {pagination.totalCount} results
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(page - 1)}
+                disabled={!pagination.hasPrevPage || isLoading}
+              >
+                <ChevronLeft className="w-4 h-4 mr-1" />
+                Previous
+              </Button>
+              <span className="text-sm">
+                Page {pagination.page} of {pagination.totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(page + 1)}
+                disabled={!pagination.hasNextPage || isLoading}
+              >
+                Next
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
+            </div>
+          </div>
+        )}
       </Card>
 
-      {/* Compact Image Preview Modal */}
+      {/* Image Preview Modal */}
       {selectedImage && (
         <div
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
           onClick={() => setSelectedImage(null)}
         >
           <div
-            className="bg-background rounded-lg p-4 max-w-2xl w-full max-h-[80vh] overflow-auto"
+            className="bg-background rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex justify-between items-center mb-3">
-              <h3 className="text-base font-semibold">Preview</h3>
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <h3 className="text-lg font-semibold">Image Preview</h3>
+                <p className="text-sm text-muted-foreground">
+                  Request ID: {selectedImage.logData.requestId}
+                </p>
+              </div>
               <Button variant="ghost" size="sm" onClick={() => setSelectedImage(null)}>
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -353,28 +400,76 @@ export default function HistoryPage() {
                 </svg>
               </Button>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <h4 className="text-xs font-medium mb-1">Original</h4>
-                <div className="relative aspect-square rounded overflow-hidden border">
-                  <Image
-                    src={selectedImage.original}
-                    alt="Original"
-                    fill
-                    className="object-cover"
-                  />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {selectedImage.original && (
+                <div>
+                  <h4 className="text-sm font-medium mb-2">Original Image</h4>
+                  <div className="relative aspect-square rounded-lg overflow-hidden border bg-muted">
+                    <S3Image
+                      src={selectedImage.original}
+                      alt="Original"
+                      fill
+                      className="object-contain"
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
               {selectedImage.processed && (
                 <div>
-                  <h4 className="text-xs font-medium mb-1">Processed</h4>
-                  <div className="relative aspect-square rounded overflow-hidden border">
-                    <Image
+                  <h4 className="text-sm font-medium mb-2">Processed Image</h4>
+                  <div
+                    className="relative aspect-square rounded-lg overflow-hidden border"
+                    style={{
+                      backgroundImage:
+                        'linear-gradient(45deg, #f0f0f0 25%, transparent 25%), linear-gradient(-45deg, #f0f0f0 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #f0f0f0 75%), linear-gradient(-45deg, transparent 75%, #f0f0f0 75%)',
+                      backgroundSize: '20px 20px',
+                      backgroundPosition: '0 0, 0 10px, 10px -10px, -10px 0px',
+                    }}
+                  >
+                    <S3Image
                       src={selectedImage.processed}
                       alt="Processed"
                       fill
-                      className="object-cover"
+                      className="object-contain"
                     />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Log Details */}
+            <div className="mt-4 p-4 bg-muted rounded-lg">
+              <h4 className="text-sm font-medium mb-2">Processing Details</h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div>
+                  <span className="text-muted-foreground">Status:</span>
+                  <div className="mt-1">{getStatusBadge(selectedImage.logData.status)}</div>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Processing Time:</span>
+                  <div className="font-medium">
+                    {selectedImage.logData.processingTime
+                      ? `${(selectedImage.logData.processingTime / 1000).toFixed(1)}s`
+                      : 'N/A'}
+                  </div>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Credits Used:</span>
+                  <div className="font-medium">{selectedImage.logData.creditsUsed}</div>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Date:</span>
+                  <div className="font-medium">
+                    {format(new Date(selectedImage.logData.createdAt), 'MMM dd, yyyy HH:mm')}
+                  </div>
+                </div>
+              </div>
+              {selectedImage.logData.errorMessage && (
+                <div className="mt-2">
+                  <span className="text-muted-foreground">Error:</span>
+                  <div className="font-medium text-destructive">
+                    {selectedImage.logData.errorMessage}
                   </div>
                 </div>
               )}

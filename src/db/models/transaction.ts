@@ -171,7 +171,6 @@ const transactionSchema = new Schema<ITransaction>(
   }
 );
 
-transactionSchema.index({ transactionId: 1 });
 transactionSchema.index({ customerId: 1 });
 transactionSchema.index({ userId: 1 });
 transactionSchema.index({ currentStatus: 1 });

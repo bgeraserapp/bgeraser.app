@@ -12,6 +12,7 @@ export const authQueryKeys = {
   user: ['auth', 'user'] as const,
   accounts: ['auth', 'accounts'] as const,
   sessions: ['auth', 'sessions'] as const,
+  credits: ['auth', 'credits'] as const,
 } as const;
 
 // Accounts Query
@@ -269,30 +270,57 @@ export function useRevokeAllSessionsMutation() {
   });
 }
 
+// Credits Query
+export function useCreditsQuery() {
+  return useQuery({
+    queryKey: authQueryKeys.credits,
+    queryFn: async () => {
+      const response = await fetch('/api/credits');
+      if (!response.ok) {
+        throw new Error('Failed to fetch credits');
+      }
+      const data = await response.json();
+      return data.credits;
+    },
+    staleTime: 1 * 60 * 1000, // 1 minute - shorter for more frequent updates
+    refetchOnWindowFocus: true, // Refetch when user switches back to tab
+    refetchOnMount: true, // Refetch when component mounts
+    retry: 1,
+  });
+}
+
 export function useClearAuthCache() {
   const queryClient = useQueryClient();
   return () => {
     queryClient.invalidateQueries({ queryKey: authQueryKeys.session });
     queryClient.invalidateQueries({ queryKey: authQueryKeys.user });
     queryClient.invalidateQueries({ queryKey: authQueryKeys.accounts });
+    queryClient.invalidateQueries({ queryKey: authQueryKeys.credits });
   };
 }
 
-// Convenience hooks
+// Main Auth Hook - Centralized
 export function useAuth() {
   const sessionQuery = useSessionQuery();
+  const creditsQuery = useCreditsQuery();
   const signInMutation = useSignInMutation();
   const signOutMutation = useSignOutMutation();
   const linkAccountMutation = useLinkAccountMutation();
   const unlinkAccountMutation = useUnlinkAccountMutation();
-  const updateUserMutation = useClearAuthCache();
+  const updateUserMutation = useUpdateUserMutation();
+  const clearAuthCache = useClearAuthCache();
+  const queryClient = useQueryClient();
 
   return {
-    clearAuthCache: updateUserMutation,
+    // Session and User data
     session: sessionQuery.data,
     user: sessionQuery.data?.user || null,
-    isLoading: sessionQuery.isLoading,
+    credits: creditsQuery.data || 0,
+    isLoading: sessionQuery.isLoading || creditsQuery.isLoading,
     isAuthenticated: !!sessionQuery.data,
+    error: sessionQuery.error || creditsQuery.error,
+
+    // Actions
     signIn: {
       social: signInMutation.mutate,
       isLoading: signInMutation.isPending,
@@ -309,23 +337,34 @@ export function useAuth() {
       mutate: unlinkAccountMutation.mutate,
       isLoading: unlinkAccountMutation.isPending,
     },
+    updateUser: {
+      mutate: updateUserMutation.mutate,
+      isLoading: updateUserMutation.isPending,
+    },
+    clearAuthCache,
+
+    // Credit management
+    invalidateCredits: () => {
+      queryClient.invalidateQueries({ queryKey: authQueryKeys.credits });
+    },
   };
 }
 
+// Simplified convenience hooks
 export function useSession() {
-  const sessionQuery = useSessionQuery();
+  const auth = useAuth();
   return {
-    data: sessionQuery.data,
-    isLoading: sessionQuery.isLoading,
-    error: sessionQuery.error,
+    data: auth.session,
+    isLoading: auth.isLoading,
+    error: auth.error,
   };
 }
 
 export function useUser() {
-  const userQuery = useUserQuery();
+  const auth = useAuth();
   return {
-    data: userQuery.data,
-    isLoading: userQuery.isLoading,
-    error: userQuery.error,
+    data: auth.user,
+    isLoading: auth.isLoading,
+    error: auth.error,
   };
 }

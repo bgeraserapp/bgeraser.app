@@ -15,7 +15,7 @@ export function ModeToggle({ multipleMode, onToggleMode }: ModeToggleProps) {
   return (
     <Card className="p-2 bg-card/80 backdrop-blur-sm border shadow-lg">
       <div className="flex items-center gap-2">
-        <Button variant={!multipleMode ? 'default' : 'ghost'} size="sm" onClick={onToggleMode}>
+        <Button variant={!multipleMode ? 'default' : 'ghost'} size="lg" onClick={onToggleMode}>
           <ImageIcon className="w-4 h-4 mr-2" />
           Single Image
           {!multipleMode && (
@@ -28,7 +28,7 @@ export function ModeToggle({ multipleMode, onToggleMode }: ModeToggleProps) {
           )}
         </Button>
 
-        <Button variant={multipleMode ? 'default' : 'ghost'} size="sm" onClick={onToggleMode}>
+        <Button variant={multipleMode ? 'default' : 'ghost'} size="lg" onClick={onToggleMode}>
           <Images className="w-4 h-4 mr-2" />
           Multiple Images
           {multipleMode && (
