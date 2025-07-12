@@ -1,5 +1,6 @@
 import { Footer } from '@/components/layout/footer';
 import { Navbar } from '@/components/layout/navbar';
+import AppConfig from '@/lib/app-config';
 
 export default function TermsPage() {
   return (
@@ -128,8 +129,8 @@ export default function TermsPage() {
             <h2>14. Contact Information</h2>
             <p>If you have any questions about these Terms of Service, please contact us at:</p>
             <ul>
-              <li>Email: legal@bgeraser.com</li>
-              <li>Address: [Company Address]</li>
+              <li>Email: {AppConfig.contact.email}</li>
+              <li>Address: {AppConfig.contact.address}</li>
             </ul>
 
             <div className="bg-muted/30 rounded-lg p-6 mt-12">

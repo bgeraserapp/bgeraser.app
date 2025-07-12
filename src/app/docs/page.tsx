@@ -4,6 +4,7 @@ import { Footer } from '@/components/layout/footer';
 import { Navbar } from '@/components/layout/navbar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import AppConfig from '@/lib/app-config';
 
 export const metadata = {
   title: 'API Documentation - BG Eraser',
@@ -193,7 +194,7 @@ files = {'file': open('image.jpg', 'rb')}
 headers = {'X-API-Key': 'your_api_key'}
 
 response = requests.post(
-    'https://api.bgeraser.com/api/models/bg-remover',
+    '${AppConfig.api.baseUrl}/api/models/bg-remover',
     files=files,
     headers=headers
 )
@@ -212,7 +213,7 @@ print(result['processed_url'])`}
                       {`curl -X POST \\
   -H "X-API-Key: your_api_key" \\
   -F "file=@image.jpg" \\
-  https://api.bgeraser.com/api/models/bg-remover`}
+  ${AppConfig.api.baseUrl}/api/models/bg-remover`}
                     </pre>
                   </div>
                 </div>
@@ -225,7 +226,7 @@ print(result['processed_url'])`}
                       {`$curl = curl_init();
 
 curl_setopt_array($curl, [
-  CURLOPT_URL => 'https://api.bgeraser.com/api/models/bg-remover',
+  CURLOPT_URL => '${AppConfig.api.baseUrl}/api/models/bg-remover',
   CURLOPT_POST => true,
   CURLOPT_POSTFIELDS => [
     'file' => new CURLFile('image.jpg')

@@ -1,5 +1,6 @@
 import { Footer } from '@/components/layout/footer';
 import { Navbar } from '@/components/layout/navbar';
+import AppConfig from '@/lib/app-config';
 
 export default function PrivacyPage() {
   return (
@@ -179,9 +180,9 @@ export default function PrivacyPage() {
               us:
             </p>
             <ul>
-              <li>Email: privacy@bgeraser.com</li>
-              <li>Data Protection Officer: dpo@bgeraser.com</li>
-              <li>Address: [Company Address]</li>
+              <li>Email: {AppConfig.contact.email}</li>
+              <li>Data Protection Officer: {AppConfig.contact.email}</li>
+              <li>Address: {AppConfig.contact.address}</li>
             </ul>
 
             <h2>13. Regional Specific Rights</h2>

@@ -5,6 +5,7 @@ import Link from 'next/link';
 
 import { env } from '@/env';
 import { useAuth } from '@/hooks/use-auth-queries';
+import AppConfig from '@/lib/app-config';
 import { cn } from '@/lib/utils';
 
 import { ThemeToggle } from '../theme-toggle';
@@ -36,7 +37,7 @@ function DashboardHeader() {
               />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-foreground">Background Remover</h1>
+          <h1 className="text-2xl font-bold text-foreground">{AppConfig.name}</h1>
         </Link>
         <div className="flex items-center space-x-3">
           <div className="flex items-center gap-2 bg-primary/10 text-primary px-3 py-1.5 rounded-full text-sm font-medium">

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Separator } from '@/components/ui/separator';
 import { env } from '@/env';
+import AppConfig from '@/lib/app-config';
 
 const footerLinks = [
   { name: 'Features', href: '#features' },
@@ -16,17 +17,17 @@ const footerLinks = [
 const socialLinks = [
   {
     name: 'Twitter',
-    href: 'https://twitter.com/bgeraser',
+    href: AppConfig.social.twitter,
     icon: Twitter,
   },
   {
     name: 'GitHub',
-    href: 'https://github.com/bgeraser',
+    href: AppConfig.social.github,
     icon: Github,
   },
   {
     name: 'Email',
-    href: 'mailto:support@bgeraser.com',
+    href: `mailto:${AppConfig.contact.email}`,
     icon: Mail,
   },
 ];
@@ -45,13 +46,11 @@ export function Footer() {
                 className="flex items-center space-x-2 mb-4 justify-center md:justify-start"
               >
                 <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-                  <span className="text-primary-foreground font-bold text-lg">BG</span>
+                  <span className="text-primary-foreground font-bold text-lg">AI</span>
                 </div>
-                <span className="text-xl font-bold">BG Eraser</span>
+                <span className="text-xl font-bold">{AppConfig.name}</span>
               </Link>
-              <p className="text-muted-foreground max-w-sm">
-                AI-powered background removal for everyone. Simple, fast, and professional results.
-              </p>
+              <p className="text-muted-foreground max-w-sm">{AppConfig.descriptions}</p>
             </div>
 
             {/* Links */}
@@ -94,7 +93,7 @@ export function Footer() {
         <div className="py-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="text-sm text-muted-foreground text-center md:text-left">
-              © {new Date().getFullYear()} BG Eraser. All rights reserved.
+              © {new Date().getFullYear()} {AppConfig.company.name}. All rights reserved.
             </div>
             <div className="flex items-center gap-4">
               <ThemeToggle />
