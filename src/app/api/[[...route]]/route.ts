@@ -6,6 +6,7 @@ import { HonoContext } from '@/types/hono';
 
 import betterAuthRoute from './routes/better-auth';
 import { bgRemoverRoute } from './routes/bg-remover';
+import { downloadZipRoute } from './routes/download-zip';
 import { healthRoute } from './routes/health';
 import { paymentRouter } from './routes/payment';
 import { transactionsRouter } from './routes/transactions';
@@ -28,6 +29,7 @@ app.use('*', async (c, next) => {
 });
 
 app.route('/', betterAuthRoute);
+app.route('/download-zip', downloadZipRoute);
 app.route('/health', healthRoute);
 app.route('/models/bg-remover', bgRemoverRoute);
 app.route('/payment', paymentRouter);
