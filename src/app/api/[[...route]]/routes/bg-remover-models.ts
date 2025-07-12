@@ -32,6 +32,7 @@ app.post('/', async (c) => {
 
   try {
     const user = c.get('user')!;
+    await connectDB();
 
     const contentType = c.req.header('content-type') || '';
     const isFormData = contentType.includes('multipart/form-data');
