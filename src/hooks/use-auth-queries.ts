@@ -269,6 +269,15 @@ export function useRevokeAllSessionsMutation() {
   });
 }
 
+export function useClearAuthCache() {
+  const queryClient = useQueryClient();
+  return () => {
+    queryClient.invalidateQueries({ queryKey: authQueryKeys.session });
+    queryClient.invalidateQueries({ queryKey: authQueryKeys.user });
+    queryClient.invalidateQueries({ queryKey: authQueryKeys.accounts });
+  };
+}
+
 // Convenience hooks
 export function useAuth() {
   const sessionQuery = useSessionQuery();
@@ -276,8 +285,10 @@ export function useAuth() {
   const signOutMutation = useSignOutMutation();
   const linkAccountMutation = useLinkAccountMutation();
   const unlinkAccountMutation = useUnlinkAccountMutation();
+  const updateUserMutation = useClearAuthCache();
 
   return {
+    clearAuthCache: updateUserMutation,
     session: sessionQuery.data,
     user: sessionQuery.data?.user || null,
     isLoading: sessionQuery.isLoading,

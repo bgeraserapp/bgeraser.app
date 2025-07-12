@@ -3,6 +3,8 @@
 import { useMutation } from '@tanstack/react-query';
 import { useCallback, useState } from 'react';
 
+import { useAuth } from '@/hooks/use-auth-queries';
+
 import { FilePreview } from './file-preview';
 import { FileUpload } from './file-upload';
 import { ModeToggle } from './mode-toggle';
@@ -48,6 +50,7 @@ export default function BackgroundRemover() {
   const [processedImages, setProcessedImages] = useState<ProcessedImage[]>([]);
   const [progress, setProgress] = useState(0);
   const [multipleMode, setMultipleMode] = useState(false);
+  const { clearAuthCache } = useAuth();
 
   const backgroundRemovalMutation = useMutation({
     mutationFn: removeBackgroundAPI,
@@ -63,6 +66,9 @@ export default function BackgroundRemover() {
       );
       setProgress(100);
       setTimeout(() => setProgress(0), 1000);
+    },
+    onSettled: () => {
+      clearAuthCache();
     },
     onError: (error: Error) => {
       console.error('Background removal error:', error);

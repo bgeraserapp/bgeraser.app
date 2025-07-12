@@ -5,16 +5,16 @@ import { connectDB } from '@/db';
 import { ITransactionState, Transaction } from '@/db/models';
 import { HonoContext } from '@/types/hono';
 
+import { requireAuth } from '../middleware';
+
 const app = new Hono<HonoContext>();
+
+// Apply authentication middleware to all routes
+app.use('*', requireAuth);
 
 app.get('/', async (c) => {
   try {
-    // Check if user is authenticated
-    const user = c.get('user');
-
-    if (!user) {
-      return c.json({ error: 'Unauthorized' }, 401);
-    }
+    const user = c.get('user')!; // User is guaranteed to exist due to middleware
 
     await connectDB();
 

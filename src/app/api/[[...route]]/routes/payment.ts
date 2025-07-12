@@ -6,7 +6,12 @@ import paddle from '@/lib/paddle';
 import creditPricingData from '@/lib/pricing';
 import { HonoContext } from '@/types/hono';
 
+import { requireAuth } from '../middleware';
+
 const app = new Hono<HonoContext>();
+
+// Apply authentication middleware to all routes
+app.use('*', requireAuth);
 
 app.post('/', async (c) => {
   try {
