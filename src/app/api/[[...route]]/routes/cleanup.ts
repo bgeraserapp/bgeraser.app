@@ -11,6 +11,11 @@ const app = new Hono<HonoContext>();
 
 // Cleanup old images (>=24 hours)
 app.get('/', async (c) => {
+  const cronSecret = c.req.header('Authorization');
+  if (cronSecret !== env.CRON_SECRET) {
+    return c.json({ message: 'Unauthorized' }, 401);
+  }
+
   try {
     // Calculate 24 hours ago
     await connectDB();

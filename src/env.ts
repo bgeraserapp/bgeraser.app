@@ -25,6 +25,7 @@ export const env = createEnv({
     PADDLE_SECRET_TOKEN: z.string(),
     PADDLE_WEBHOOK_SECRET: z.string(),
     PADDLE_ENV: z.string(),
+    CRON_SECRET: z.string(),
   },
   client: {
     NEXT_PUBLIC_AUTH_URL: z.string(),
@@ -61,5 +62,6 @@ export const env = createEnv({
     PADDLE_SECRET_TOKEN: process.env.PADDLE_SECRET_TOKEN,
     PADDLE_WEBHOOK_SECRET: process.env.PADDLE_WEBHOOK_SECRET,
     PADDLE_ENV: process.env.PADDLE_ENV,
+    CRON_SECRET: process.env.CRON_SECRET,
   },
 });
