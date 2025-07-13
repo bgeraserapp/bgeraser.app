@@ -41,7 +41,7 @@ export const auth = betterAuth({
       credits: {
         type: 'number',
         required: true,
-        defaultValue: 5,
+        defaultValue: 3,
         input: true, // allow user to set role
       },
       paddleCustomerId: {

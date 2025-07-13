@@ -18,8 +18,12 @@ export function Pricing() {
           <p className="text-xl text-muted-foreground mb-4">
             No subscriptions, no hidden fees. Pay only for what you use with our credit system.
           </p>
+          <div className="inline-flex items-center gap-2 bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300 px-4 py-2 rounded-full text-sm font-medium mb-4">
+            <span className="text-green-600 font-bold">🎉</span>
+            New users get 3 free credits to get started!
+          </div>
           <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium">
-            <CreditCard className="w-4 h-4" />1 Credit = 1 Background Removal • Only $0.16-$0.20 per
+            <CreditCard className="w-4 h-4" />1 Credit = 1 Background Removal • Only $0.08-$0.10 per
             credit
           </div>
         </div>
@@ -87,7 +91,7 @@ export function Pricing() {
                   </div>
                 </div>
 
-                <Link href={env.NEXT_PUBLIC_PORTAL_URL} className="block">
+                <Link href={`${env.NEXT_PUBLIC_PORTAL_URL}/billing`} className="block">
                   <Button
                     className="w-full"
                     size="lg"

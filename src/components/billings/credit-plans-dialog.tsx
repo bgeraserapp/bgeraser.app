@@ -36,7 +36,7 @@ export function CreditPlansDialog({
             No subscriptions, no hidden fees. Pay only for what you use.
           </DialogDescription>
           <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 py-1.5 rounded-full text-xs font-medium">
-            <CreditCard className="w-3 h-3" />1 Credit = 1 Background Removal • $0.16-$0.20 per
+            <CreditCard className="w-3 h-3" />1 Credit = 1 Background Removal • $0.08-$0.10 per
             credit
           </div>
         </DialogHeader>
