@@ -1,13 +1,22 @@
+import { Hono } from 'hono';
 import JSZip from 'jszip';
-import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST(request: NextRequest) {
+import { HonoContext } from '@/types/hono';
+
+import { requireAuth } from '../middleware';
+
+const app = new Hono<HonoContext>();
+
+// Apply authentication middleware to all routes
+app.use('*', requireAuth);
+
+app.post('/', async (c) => {
   try {
-    const body = await request.json();
+    const body = await c.req.json();
     const { urls } = body;
 
     if (!urls || !Array.isArray(urls) || urls.length === 0) {
-      return NextResponse.json({ error: 'No URLs provided' }, { status: 400 });
+      return c.json({ error: 'No URLs provided' }, 400);
     }
 
     const zip = new JSZip();
@@ -36,7 +45,7 @@ export async function POST(request: NextRequest) {
     const zipBuffer = await zip.generateAsync({ type: 'arraybuffer' });
 
     // Return zip file as response
-    return new NextResponse(zipBuffer, {
+    return new Response(zipBuffer, {
       headers: {
         'Content-Type': 'application/zip',
         'Content-Disposition': 'attachment; filename="bg-removed-images.zip"',
@@ -44,6 +53,8 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error creating zip:', error);
-    return NextResponse.json({ error: 'Failed to create zip file' }, { status: 500 });
+    return c.json({ error: 'Failed to create zip file' }, 500);
   }
-}
+});
+
+export { app as downloadZipRoute };

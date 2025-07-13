@@ -11,7 +11,6 @@ import {
   Shield,
   Smartphone,
   Tablet,
-  Trash2,
 } from 'lucide-react';
 
 import {
@@ -27,12 +26,10 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  useRevokeAllSessionsMutation,
-  useRevokeOtherSessionsMutation,
-  useRevokeSessionMutation,
-  useSessionsQuery,
-} from '@/hooks/use-auth-queries';
+import { useRevokeSessionMutation, useSessionsQuery } from '@/hooks/use-auth-queries';
+
+import EndAllSessionDialog from './end-all-session-dialog';
+import EndOtherSessionDialog from './end-other-session-dialog';
 
 interface Session {
   id: string;
@@ -98,19 +95,9 @@ function getDeviceInfo(userAgent: string = '') {
 export function SessionList() {
   const { data: sessions = [], isLoading: sessionsLoading } = useSessionsQuery();
   const revokeSessionMutation = useRevokeSessionMutation();
-  const revokeOtherSessionsMutation = useRevokeOtherSessionsMutation();
-  const revokeAllSessionsMutation = useRevokeAllSessionsMutation();
 
   const handleRevokeSession = (session: Session) => {
     revokeSessionMutation.mutate({ token: session.id });
-  };
-
-  const handleRevokeOtherSessions = () => {
-    revokeOtherSessionsMutation.mutate();
-  };
-
-  const handleRevokeAllSessions = () => {
-    revokeAllSessionsMutation.mutate();
   };
 
   if (sessionsLoading) {
@@ -149,66 +136,9 @@ export function SessionList() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-lg font-medium">Active Sessions</h3>
-          <p className="text-sm text-muted-foreground">
-            Manage your active sessions across all devices
-          </p>
-        </div>
         <div className="flex space-x-2">
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="outline" size="sm">
-                <LogOut className="mr-2 h-4 w-4" />
-                End other sessions
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>End all other sessions?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This will log you out from all other devices and browsers. Your current session
-                  will remain active.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={handleRevokeOtherSessions}
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                >
-                  End other sessions
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="destructive" size="sm">
-                <Trash2 className="mr-2 h-4 w-4" />
-                End all sessions
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>End all sessions?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This will log you out from all devices including this one. You will need to sign
-                  in again.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={handleRevokeAllSessions}
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                >
-                  End all sessions
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <EndOtherSessionDialog />
+          <EndAllSessionDialog />
         </div>
       </div>
 

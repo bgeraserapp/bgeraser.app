@@ -4,7 +4,7 @@ import { MongoClient } from 'mongodb';
 
 import { env } from '@/env';
 
-const client = new MongoClient(env.MONGODB_URI);
+const client = new MongoClient(env.DATABASE_URL);
 const db = client.db();
 
 export const auth = betterAuth({
@@ -36,6 +36,22 @@ export const auth = betterAuth({
   },
   baseURL: env.AUTH_URL,
   secret: env.AUTH_SECRET,
+  user: {
+    additionalFields: {
+      credits: {
+        type: 'number',
+        required: true,
+        defaultValue: 5,
+        input: true, // allow user to set role
+      },
+      paddleCustomerId: {
+        type: 'string',
+        required: false,
+        defaultValue: null,
+        input: true, // allow user to set role
+      },
+    },
+  },
 });
 
 export type Session = typeof auth.$Infer.Session;

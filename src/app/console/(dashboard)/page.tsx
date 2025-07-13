@@ -1,14 +1,7 @@
 'use client';
 
-import { BackgroundRemover } from '@/components/background-remover/background-remover';
-import { PageWrapper } from '@/components/layout/page-wrapper';
+import BackgroundRemover from '@/components/background-remover/background-remover';
 
 export default function ConsolePage() {
-  return (
-    <PageWrapper>
-      <div className="container mx-auto p-4">
-        <BackgroundRemover />
-      </div>
-    </PageWrapper>
-  );
+  return <BackgroundRemover />;
 }

@@ -1,12 +1,17 @@
 'use client';
 
 import { useMutation } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
 
-import { FilePreview } from '@/components/background-remover/file-preview';
-import { FileUpload } from '@/components/background-remover/file-upload';
-import { ProcessedResults } from '@/components/background-remover/processed-results';
-import { ModeToggle } from '@/components/ui/mode-toggle';
+import { CreditErrorAlert } from '@/components/background-remover/credit-error-alert';
+import { LowCreditWarning } from '@/components/background-remover/low-credit-warning';
+import { useAuth } from '@/hooks/use-auth-queries';
+
+import { FilePreview } from './file-preview';
+import { FileUpload } from './file-upload';
+import { ModeToggle } from './mode-toggle';
+import { ProcessedResults } from './processed-results';
 
 interface ProcessedImage {
   originalUrl: string;
@@ -29,7 +34,13 @@ interface BackgroundRemovalResponse {
   error?: string;
 }
 
-// API call function
+interface CreditError extends Error {
+  status: number;
+  code?: string;
+  creditsRequired?: number;
+  creditsAvailable?: number;
+}
+
 async function removeBackgroundAPI(formData: FormData): Promise<BackgroundRemovalResponse> {
   const response = await fetch('/api/models/bg-remover', {
     method: 'POST',
@@ -38,23 +49,36 @@ async function removeBackgroundAPI(formData: FormData): Promise<BackgroundRemova
 
   if (!response.ok) {
     const errorData = await response.json();
+
+    if (response.status === 402) {
+      // Payment Required - Insufficient Credits
+      const creditError = new Error(
+        errorData.message || errorData.error || 'Insufficient credits'
+      ) as CreditError;
+      creditError.status = 402;
+      creditError.code = errorData.code;
+      creditError.creditsRequired = errorData.creditsRequired;
+      creditError.creditsAvailable = errorData.creditsAvailable;
+      throw creditError;
+    }
+
     throw new Error(errorData.error || 'Failed to process images');
   }
 
   return response.json();
 }
 
-export function BackgroundRemover() {
+export default function BackgroundRemover() {
   const [files, setFiles] = useState<UploadedFile[]>([]);
   const [processedImages, setProcessedImages] = useState<ProcessedImage[]>([]);
   const [progress, setProgress] = useState(0);
   const [multipleMode, setMultipleMode] = useState(false);
+  const [showCreditError, setShowCreditError] = useState(false);
+  const { clearAuthCache, user, credits, invalidateCredits } = useAuth();
 
-  // React Query mutation for background removal
   const backgroundRemovalMutation = useMutation({
     mutationFn: removeBackgroundAPI,
     onSuccess: (data) => {
-      // Handle both single and multiple results
       const results = Array.isArray(data.results) ? data.results : [data.results];
       setProcessedImages(
         results.map((r: ProcessedImage) => ({
@@ -67,8 +91,22 @@ export function BackgroundRemover() {
       setProgress(100);
       setTimeout(() => setProgress(0), 1000);
     },
+    onSettled: () => {
+      clearAuthCache();
+      invalidateCredits();
+    },
     onError: (error: Error) => {
       console.error('Background removal error:', error);
+
+      // Handle credit errors specifically
+      const creditError = error as CreditError;
+      if (creditError.status === 402) {
+        setShowCreditError(true);
+        // Update credits from server response if available
+        if (typeof creditError.creditsAvailable === 'number') {
+          invalidateCredits();
+        }
+      }
     },
   });
 
@@ -94,8 +132,17 @@ export function BackgroundRemover() {
   const processImages = useCallback(async () => {
     if (files.length === 0) return;
 
-    setProgress(0);
+    const creditsNeeded = files.length;
 
+    // Check if user has sufficient credits before processing
+    if (credits < creditsNeeded) {
+      setShowCreditError(true);
+      return;
+    }
+
+    setShowCreditError(false);
+
+    setProgress(0);
     const formData = new FormData();
 
     if (multipleMode) {
@@ -103,11 +150,9 @@ export function BackgroundRemover() {
         formData.append('images', file);
       });
     } else {
-      // Single mode: append as 'image' for single processing
       formData.append('image', files[0].file);
     }
 
-    // Simulate progress
     const progressInterval = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 90) {
@@ -118,13 +163,12 @@ export function BackgroundRemover() {
       });
     }, 500);
 
-    // Use React Query mutation
     backgroundRemovalMutation.mutate(formData, {
       onSettled: () => {
         clearInterval(progressInterval);
       },
     });
-  }, [files, multipleMode, backgroundRemovalMutation]);
+  }, [files, multipleMode, backgroundRemovalMutation, credits]);
 
   const reset = useCallback(() => {
     files.forEach((f) => URL.revokeObjectURL(f.preview));
@@ -132,6 +176,7 @@ export function BackgroundRemover() {
     setProcessedImages([]);
     backgroundRemovalMutation.reset();
     setProgress(0);
+    setShowCreditError(false);
   }, [files, backgroundRemovalMutation]);
 
   const toggleMode = useCallback(() => {
@@ -139,29 +184,77 @@ export function BackgroundRemover() {
     reset();
   }, [reset]);
 
+  const router = useRouter();
+  const handleBuyCredits = useCallback(() => {
+    router.push('/billing');
+  }, [router]);
+
   return (
-    <div className="w-full max-w-6xl mx-auto space-y-6">
-      <ModeToggle multipleMode={multipleMode} onToggleMode={toggleMode} />
+    <div className="w-full bg-gradient-page dark:bg-gradient-page-dark">
+      <div className="container mx-auto px-2 py-2">
+        <div className="max-w-4xl mx-auto space-y-2">
+          {/* Compact Header with Mode Toggle */}
+          <div className="text-center space-y-2 animate-in fade-in-0 duration-700">
+            <div className="flex items-center justify-center flex-col gap-3">
+              <div className="w-20 h-20 bg-primary rounded-lg flex items-center justify-center my-5">
+                <span className="text-primary-foreground font-bold text-4xl">BG</span>
+              </div>
+              <ModeToggle multipleMode={multipleMode} onToggleMode={toggleMode} />
+            </div>
+          </div>
 
-      <FileUpload
-        files={files}
-        onFilesChange={onFilesChange}
-        multipleMode={multipleMode}
-        onReset={onMutationReset}
-      />
+          {/* Compact Alerts */}
+          {user && credits < 5 && !showCreditError && (
+            <div className="animate-in slide-in-from-bottom-2 duration-300">
+              <LowCreditWarning />
+            </div>
+          )}
 
-      <FilePreview
-        files={files}
-        onRemoveFile={removeFile}
-        onProcessImages={processImages}
-        onReset={reset}
-        multipleMode={multipleMode}
-        isProcessing={backgroundRemovalMutation.isPending}
-        progress={progress}
-        error={backgroundRemovalMutation.error?.message}
-      />
+          {showCreditError && (
+            <div className="animate-in slide-in-from-bottom-2 duration-300">
+              <CreditErrorAlert
+                creditsNeeded={files.length}
+                creditsAvailable={credits}
+                onBuyCredits={handleBuyCredits}
+              />
+            </div>
+          )}
 
-      <ProcessedResults processedImages={processedImages} multipleMode={multipleMode} />
+          {/* Compact Main Content */}
+          <div className="space-y-2">
+            <div className="animate-in slide-in-from-bottom-2 duration-500">
+              <FileUpload
+                files={files}
+                onFilesChange={onFilesChange}
+                multipleMode={multipleMode}
+                onReset={onMutationReset}
+              />
+            </div>
+
+            {files.length > 0 && (
+              <div className="animate-in slide-in-from-bottom-2 duration-500 delay-100">
+                <FilePreview
+                  files={files}
+                  onRemoveFile={removeFile}
+                  onProcessImages={processImages}
+                  onReset={reset}
+                  multipleMode={multipleMode}
+                  isProcessing={backgroundRemovalMutation.isPending}
+                  progress={progress}
+                  error={backgroundRemovalMutation.error?.message}
+                  credits={credits}
+                />
+              </div>
+            )}
+
+            {processedImages.length > 0 && (
+              <div className="animate-in slide-in-from-bottom-2 duration-500 delay-200">
+                <ProcessedResults processedImages={processedImages} multipleMode={multipleMode} />
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
