@@ -34,7 +34,7 @@ export function Navbar() {
                 Features
               </Link>
               <Link
-                href="#pricing"
+                href="/pricing"
                 className="text-foreground hover:text-foreground px-3 py-2 text-sm font-medium transition-colors"
               >
                 Pricing
@@ -82,7 +82,7 @@ export function Navbar() {
                 Features
               </Link>
               <Link
-                href="#pricing"
+                href="/pricing"
                 className="block px-3 py-2 text-base font-medium text-muted-foreground hover:text-foreground"
                 onClick={() => setIsMenuOpen(false)}
               >

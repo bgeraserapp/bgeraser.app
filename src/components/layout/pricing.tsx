@@ -91,7 +91,7 @@ export function Pricing() {
                   </div>
                 </div>
 
-                <Link href={env.NEXT_PUBLIC_PORTAL_URL} className="block">
+                <Link href={`${env.NEXT_PUBLIC_PORTAL_URL}/billing`} className="block">
                   <Button
                     className="w-full"
                     size="lg"

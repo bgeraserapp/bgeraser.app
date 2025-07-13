@@ -1,4 +1,4 @@
-import { Github, Mail, Twitter } from 'lucide-react';
+import { GitFork, Mail, X } from 'lucide-react';
 import Link from 'next/link';
 
 import { ThemeToggle } from '@/components/theme-toggle';
@@ -8,22 +8,23 @@ import AppConfig from '@/lib/app-config';
 
 const footerLinks = [
   { name: 'Features', href: '#features' },
-  { name: 'Pricing', href: '#pricing' },
+  { name: 'Pricing', href: '/pricing' },
   { name: 'Documentation', href: env.NEXT_PUBLIC_DOCS_URL },
   { name: 'Privacy Policy', href: '/privacy' },
   { name: 'Terms of Service', href: '/terms' },
+  { name: 'Refund Policy', href: '/refund-policy' },
 ];
 
 const socialLinks = [
   {
     name: 'Twitter',
     href: AppConfig.social.twitter,
-    icon: Twitter,
+    icon: X,
   },
   {
     name: 'GitHub',
     href: AppConfig.social.github,
-    icon: Github,
+    icon: GitFork,
   },
   {
     name: 'Email',
