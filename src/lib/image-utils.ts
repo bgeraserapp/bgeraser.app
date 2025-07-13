@@ -7,7 +7,9 @@ export interface ImageData {
 
 export interface ProcessedImageResult {
   originalUrl: string;
+  originalKey: string;
   processedUrl: string;
+  processedKey: string;
   imageId: string;
 }
 

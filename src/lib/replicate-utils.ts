@@ -5,6 +5,7 @@ import { S3UploadResult, uploadProcessedImageToS3 } from '@/lib/s3-utils';
 export interface ReplicateProcessingResult {
   success: boolean;
   processedUrl: string;
+  processedKey: string;
   imageId: string;
 }
 
@@ -29,6 +30,7 @@ export async function processImageWithReplicate(
     return {
       success: true,
       processedUrl: processedUpload.url,
+      processedKey: processedUpload.key,
       imageId,
     };
   } catch (error) {
@@ -45,7 +47,9 @@ export async function processMultipleImagesWithReplicate(
 
     return {
       originalUrl: uploadResult.url,
+      originalKey: uploadResult.key,
       processedUrl: replicateResult.processedUrl,
+      processedKey: replicateResult.processedKey,
       imageId: uploadResult.imageId,
     };
   });
@@ -60,7 +64,9 @@ export async function processSingleImageWithReplicate(
 
   return {
     originalUrl: uploadResult.url,
+    originalKey: uploadResult.key,
     processedUrl: replicateResult.processedUrl,
+    processedKey: replicateResult.processedKey,
     imageId: uploadResult.imageId,
   };
 }

@@ -110,7 +110,7 @@ app.post('/', async (c) => {
           modelName: internalModelName,
           creditsUsed: 1,
           requestId: `${requestId}-${i}`,
-          originalImageUrl: uploadResult.url,
+          originalImageUrl: uploadResult.key,
           imageFormat: image.mimeType,
           imageSize: image.buffer.length,
         });
@@ -135,7 +135,7 @@ app.post('/', async (c) => {
         try {
           await updateLogStatus(logId, 'success', {
             processingTime,
-            processedImageUrl: result.processedUrl,
+            processedImageUrl: result.processedKey,
           });
         } catch (logError) {
           console.error('Failed to update log status:', logError);
@@ -175,7 +175,7 @@ app.get('/logs', async (c) => {
 
     // Build query for pagination
     const query: Record<string, unknown> = { userId: user.id };
-    if (status && ['success', 'error', 'processing'].includes(status)) {
+    if (status && ['success', 'error', 'processing', 'deleted'].includes(status)) {
       query.status = status;
     }
 

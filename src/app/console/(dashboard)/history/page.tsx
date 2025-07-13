@@ -33,7 +33,7 @@ import {
 } from '@/components/ui/table';
 import { type BgRemoverLogData, useBgRemoverLogs } from '@/hooks/use-bg-remover-logs';
 
-type FilterStatus = 'all' | 'success' | 'error' | 'processing';
+type FilterStatus = 'all' | 'success' | 'error' | 'processing' | 'deleted';
 
 export default function HistoryPage() {
   const [page, setPage] = useState(1);
@@ -75,6 +75,15 @@ export default function HistoryPage() {
             className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
           >
             Processing
+          </Badge>
+        );
+      case 'deleted':
+        return (
+          <Badge
+            variant="secondary"
+            className="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+          >
+            Deleted
           </Badge>
         );
       default:
@@ -198,6 +207,14 @@ export default function HistoryPage() {
                   >
                     Processing
                   </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      setStatusFilter('deleted');
+                      setPage(1);
+                    }}
+                  >
+                    Deleted
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -243,26 +260,24 @@ export default function HistoryPage() {
                       <TableRow key={log._id} className="hover:bg-muted/50">
                         <TableCell>
                           <div className="flex gap-1">
-                            {log.originalImageUrl && (
-                              <div className="relative w-8 h-8 rounded overflow-hidden border">
-                                <S3Image
-                                  src={log.originalImageUrl}
-                                  alt="Original"
-                                  fill
-                                  className="object-cover"
-                                />
-                              </div>
-                            )}
-                            {log.processedImageUrl && (
-                              <div className="relative w-8 h-8 rounded overflow-hidden border">
-                                <S3Image
-                                  src={log.processedImageUrl}
-                                  alt="Processed"
-                                  fill
-                                  className="object-cover"
-                                />
-                              </div>
-                            )}
+                            <div className="relative w-8 h-8 rounded overflow-hidden border">
+                              <S3Image
+                                src={log.status === 'deleted' ? null : log.originalImageUrl || null}
+                                alt="Original"
+                                fill
+                                className="object-cover"
+                              />
+                            </div>
+                            <div className="relative w-8 h-8 rounded overflow-hidden border">
+                              <S3Image
+                                src={
+                                  log.status === 'deleted' ? null : log.processedImageUrl || null
+                                }
+                                alt="Processed"
+                                fill
+                                className="object-cover"
+                              />
+                            </div>
                           </div>
                         </TableCell>
                         <TableCell className="font-mono text-xs">{log.requestId}</TableCell>
@@ -305,22 +320,23 @@ export default function HistoryPage() {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-1">
-                            {(log.originalImageUrl || log.processedImageUrl) && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() =>
-                                  setSelectedImage({
-                                    original: log.originalImageUrl || '',
-                                    processed: log.processedImageUrl || undefined,
-                                    logData: log,
-                                  })
-                                }
-                              >
-                                <Eye className="w-3 h-3" />
-                              </Button>
-                            )}
-                            {log.processedImageUrl && (
+                            {log.status !== 'deleted' &&
+                              (log.originalImageUrl || log.processedImageUrl) && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() =>
+                                    setSelectedImage({
+                                      original: log.originalImageUrl || '',
+                                      processed: log.processedImageUrl || undefined,
+                                      logData: log,
+                                    })
+                                  }
+                                >
+                                  <Eye className="w-3 h-3" />
+                                </Button>
+                              )}
+                            {log.status !== 'deleted' && log.processedImageUrl && (
                               <Button
                                 variant="ghost"
                                 size="sm"
@@ -333,6 +349,11 @@ export default function HistoryPage() {
                               >
                                 <Download className="w-3 h-3" />
                               </Button>
+                            )}
+                            {log.status === 'deleted' && (
+                              <span className="text-xs text-muted-foreground px-2">
+                                Images deleted
+                              </span>
                             )}
                           </div>
                         </TableCell>

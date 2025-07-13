@@ -6,7 +6,7 @@ export interface BgRemoverLogData {
   _id: string;
   userId: string;
   modelName: string;
-  status: 'success' | 'error' | 'processing';
+  status: 'success' | 'error' | 'processing' | 'deleted';
   creditsUsed: number;
   processingTime?: number;
   errorMessage?: string;

@@ -3,7 +3,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 export interface IBgRemoverLog extends Document {
   userId: string;
   modelName: string;
-  status: 'success' | 'error' | 'processing';
+  status: 'success' | 'error' | 'processing' | 'deleted';
   creditsUsed: number;
   processingTime?: number;
   errorMessage?: string;
@@ -30,7 +30,7 @@ const bgRemoverLogSchema = new Schema<IBgRemoverLog>(
     status: {
       type: String,
       required: true,
-      enum: ['success', 'error', 'processing'],
+      enum: ['success', 'error', 'processing', 'deleted'],
       default: 'processing',
     },
     creditsUsed: {

@@ -12,10 +12,12 @@ import { HonoContext } from '@/types/hono';
 // Import route modules
 import betterAuthRoute from './routes/better-auth';
 import { bgRemoverModelsRoute } from './routes/bg-remover-models';
+import { cleanupRoute } from './routes/cleanup';
 import { creditsRoute } from './routes/credits';
 import { downloadZipRoute } from './routes/download-zip';
 import { healthRoute } from './routes/health';
 import { paymentsRoute } from './routes/payments';
+import { s3SignedUrlRoute } from './routes/s3-signed-url';
 import { webhookRouter } from './routes/webhook';
 
 // Create Hono app with base path
@@ -95,6 +97,12 @@ app.route('/models/bg-remover', bgRemoverModelsRoute);
 
 // File management routes
 app.route('/download-zip', downloadZipRoute);
+
+// Cleanup routes
+app.route('/cleanup', cleanupRoute);
+
+// S3 signed URL routes
+app.route('/s3/signed-url', s3SignedUrlRoute);
 
 // Payment routes (includes transactions)
 // POST /api/payment - Create payment
