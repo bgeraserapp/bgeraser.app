@@ -55,11 +55,17 @@ export default async function SignInPage() {
         <div className="text-center mt-4 text-xs text-muted-foreground">
           <p>
             By signing in, you agree to our{' '}
-            <Link href="#" className="text-primary hover:underline">
+            <Link
+              href={`${env.NEXT_PUBLIC_HOME_URL}/terms`}
+              className="text-primary hover:underline"
+            >
               Terms
             </Link>{' '}
             and{' '}
-            <Link href="#" className="text-primary hover:underline">
+            <Link
+              href={`${env.NEXT_PUBLIC_HOME_URL}/privacy`}
+              className="text-primary hover:underline"
+            >
               Privacy Policy
             </Link>
           </p>
