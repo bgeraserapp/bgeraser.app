@@ -3,7 +3,7 @@ import { Environment, Paddle } from '@paddle/paddle-node-sdk';
 import { env } from '@/env';
 
 const paddle = new Paddle(env.PADDLE_SECRET_TOKEN!, {
-  environment: env.PADDLE_ENV === 'sandbox' ? Environment.sandbox : Environment.production,
+  environment: Environment.production,
 });
 
 export default paddle;

@@ -1,7 +1,6 @@
 import { IconUserCog } from '@tabler/icons-react';
-import { Link2, Shield } from 'lucide-react';
+import { Shield } from 'lucide-react';
 
-import { ConnectedAccounts } from '@/components/account/connected-accounts';
 import { ProfileForm } from '@/components/account/profile-form';
 import { SessionList } from '@/components/account/session-list';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,7 +28,7 @@ export default function AccountPage() {
         </Card>
 
         {/* Connected Accounts */}
-        <Card>
+        {/* <Card>
           <CardHeader>
             <CardTitle className="flex items-center">
               <div className="inline-flex items-center gap-2 mb-2">
@@ -46,7 +45,7 @@ export default function AccountPage() {
           <CardContent>
             <ConnectedAccounts />
           </CardContent>
-        </Card>
+        </Card> */}
 
         {/* Session Management */}
         <Card>

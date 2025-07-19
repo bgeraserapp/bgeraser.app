@@ -15,7 +15,7 @@ const creditPricingData: Pricing[] = [
     credits: 50,
     price: 4.99,
     popular: false,
-    paddlePriceId: 'pri_01jzv2ckqjdycxprmghmbhtwk8',
+    paddlePriceId: 'pri_01k0heabd87e0hsk09b52y05gv',
     description: 'Personal use',
   },
   {
@@ -24,7 +24,7 @@ const creditPricingData: Pricing[] = [
     credits: 100,
     price: 9.99,
     popular: true,
-    paddlePriceId: 'pri_01jzxsn3x9aszs34gkdd9ryse4',
+    paddlePriceId: 'pri_01k0hed59gj3fz2vtecc2pawx3',
     description: 'Most popular',
   },
   {
@@ -33,7 +33,7 @@ const creditPricingData: Pricing[] = [
     credits: 250,
     price: 19.99,
     popular: false,
-    paddlePriceId: 'pri_01jzxsppce3efhpnrcgzq35nfa',
+    paddlePriceId: 'pri_01k0heepah07kc468sxycyj33s',
     description: 'For professionals',
   },
 ];
