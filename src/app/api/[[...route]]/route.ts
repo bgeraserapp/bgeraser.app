@@ -18,6 +18,7 @@ import { downloadZipRoute } from './routes/download-zip';
 import { healthRoute } from './routes/health';
 import { paymentsRoute } from './routes/payments';
 import { s3SignedUrlRoute } from './routes/s3-signed-url';
+import { uploadUrlsRoute } from './routes/upload-urls';
 import { webhookRouter } from './routes/webhook';
 
 // Create Hono app with base path
@@ -103,6 +104,9 @@ app.route('/cleanup', cleanupRoute);
 
 // S3 signed URL routes
 app.route('/s3/signed-url', s3SignedUrlRoute);
+
+// Upload URLs routes
+app.route('/upload-urls', uploadUrlsRoute);
 
 // Payment routes (includes transactions)
 // POST /api/payment - Create payment

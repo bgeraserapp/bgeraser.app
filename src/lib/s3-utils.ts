@@ -90,3 +90,40 @@ export async function uploadProcessedImageToS3(
     imageId,
   };
 }
+
+export async function downloadImageFromS3(s3Key: string): Promise<ImageData> {
+  const s3Client = createS3Client();
+
+  const getObjectCommand = new GetObjectCommand({
+    Bucket: env.AWS_BUCKET_NAME,
+    Key: s3Key,
+  });
+
+  const response = await s3Client.send(getObjectCommand);
+
+  if (!response.Body) {
+    throw new Error(`Failed to download image from S3: ${s3Key}`);
+  }
+
+  const buffer = await response.Body.transformToByteArray();
+  const contentType = response.ContentType || 'image/jpeg';
+
+  if (!contentType.startsWith('image/')) {
+    throw new Error(`Invalid content type: ${contentType}`);
+  }
+
+  const extension = contentType.split('/')[1] || 'jpg';
+  const filename = s3Key.split('/').pop() || `image.${extension}`;
+
+  return {
+    buffer,
+    mimeType: contentType,
+    extension,
+    filename,
+  };
+}
+
+export async function downloadMultipleImagesFromS3(s3Keys: string[]): Promise<ImageData[]> {
+  const downloadPromises = s3Keys.map((key) => downloadImageFromS3(key));
+  return Promise.all(downloadPromises);
+}

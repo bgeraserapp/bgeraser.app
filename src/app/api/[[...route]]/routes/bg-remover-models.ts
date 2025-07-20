@@ -1,7 +1,10 @@
+import { GetObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Hono } from 'hono';
 
 import { connectDB } from '@/db';
 import { BgRemoverLog } from '@/db/models';
+import { env } from '@/env';
 import {
   generateRequestId,
   getInternalModelName,
@@ -11,10 +14,13 @@ import {
 import {
   extractImagesFromFormData,
   extractImagesFromJson,
+  extractS3KeysFromJson,
   JsonPayload,
   validateImageInput,
+  validateS3Keys,
 } from '@/lib/image-utils';
 import { processMultipleImagesWithReplicate } from '@/lib/replicate-utils';
+import { createS3Client } from '@/lib/s3-client';
 import { uploadMultipleImagesToS3 } from '@/lib/s3-utils';
 import { HonoContext } from '@/types/hono';
 
@@ -39,25 +45,39 @@ app.post('/', async (c) => {
     const isJson = contentType.includes('application/json');
 
     let images;
+    let s3Keys: string[] | null = null;
+    let imageCount: number;
 
-    if (isFormData) {
+    if (isJson) {
+      const jsonData: JsonPayload = await c.req.json();
+
+      // Primary flow: S3 keys (no need to download images, just validate keys)
+      if (jsonData.s3Keys) {
+        s3Keys = extractS3KeysFromJson(jsonData);
+        validateS3Keys(s3Keys);
+        imageCount = s3Keys.length;
+        // Don't download images - we'll process directly from S3 keys
+        images = null;
+      } else {
+        // Fallback: base64 images
+        images = extractImagesFromJson(jsonData);
+        validateImageInput(images);
+        imageCount = images.length;
+      }
+    } else if (isFormData) {
+      // Fallback: form data
       const formData = await c.req.formData();
       images = await extractImagesFromFormData(formData);
-    } else if (isJson) {
-      const jsonData: JsonPayload = await c.req.json();
-      images = extractImagesFromJson(jsonData);
+      validateImageInput(images);
+      imageCount = images.length;
     } else {
       return c.json(
         {
-          error: 'Unsupported content type. Use multipart/form-data or application/json',
+          error: 'Unsupported content type. Use application/json with s3Keys',
         },
         400
       );
     }
-
-    validateImageInput(images);
-
-    const imageCount = images.length;
     const creditsNeeded = imageCount;
 
     // Apply credit requirement middleware dynamically
@@ -87,8 +107,34 @@ app.post('/', async (c) => {
       return c.json({ error: 'Failed to get user data' }, 500);
     }
 
-    // Process images first to get URLs
-    const uploadResults = await uploadMultipleImagesToS3(images);
+    // Process to get URLs - either use existing S3 keys or upload new images
+    let uploadResults;
+
+    if (s3Keys) {
+      // Generate presigned URLs for existing S3 keys
+      const s3Client = createS3Client();
+
+      uploadResults = await Promise.all(
+        s3Keys.map(async (key, index) => {
+          const getObjectCommand = new GetObjectCommand({
+            Bucket: env.AWS_BUCKET_NAME,
+            Key: key,
+          });
+
+          const presignedUrl = await getSignedUrl(s3Client, getObjectCommand, {
+            expiresIn: 3600, // 1 hour
+          });
+
+          return {
+            key,
+            url: presignedUrl,
+            imageId: key.split('/').pop()?.split('-')[0] || `img-${index}`,
+          };
+        })
+      );
+    } else {
+      uploadResults = await uploadMultipleImagesToS3(images!);
+    }
 
     // Deduct credits atomically before processing
     const deductCreditMiddleware = deductCredits(creditsNeeded);
@@ -101,18 +147,21 @@ app.post('/', async (c) => {
     const logIds: string[] = [];
     const internalModelName = getInternalModelName('bg-remover');
 
-    for (let i = 0; i < images.length; i++) {
-      const image = images[i];
+    for (let i = 0; i < imageCount; i++) {
       const uploadResult = uploadResults[i];
       try {
+        // For S3 keys, we don't have image data, so use defaults
+        const imageFormat = s3Keys ? 'image/jpeg' : images![i].mimeType;
+        const imageSize = s3Keys ? 0 : images![i].buffer.length;
+
         const logId = await logBgRemoverUsage({
           userId: user.id,
           modelName: internalModelName,
           creditsUsed: 1,
           requestId: `${requestId}-${i}`,
           originalImageUrl: uploadResult.key,
-          imageFormat: image.mimeType,
-          imageSize: image.buffer.length,
+          imageFormat,
+          imageSize,
         });
         logIds.push(logId);
       } catch (logError) {

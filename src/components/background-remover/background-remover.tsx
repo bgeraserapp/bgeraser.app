@@ -24,6 +24,11 @@ interface UploadedFile {
   file: File;
   preview: string;
   id: string;
+  s3Key?: string;
+  uploadUrl?: string;
+  downloadUrl?: string;
+  uploading?: boolean;
+  uploadError?: string;
 }
 
 interface BackgroundRemovalResponse {
@@ -41,10 +46,59 @@ interface CreditError extends Error {
   creditsAvailable?: number;
 }
 
-async function removeBackgroundAPI(formData: FormData): Promise<BackgroundRemovalResponse> {
+async function getUploadUrls(files: File[]): Promise<{
+  uploadUrls: Array<{
+    uploadUrl: string;
+    downloadUrl: string;
+    key: string;
+    fileId: string;
+  }>;
+}> {
+  const response = await fetch('/api/upload-urls', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      files: files.map((file) => ({
+        name: file.name,
+        type: file.type,
+        size: file.size,
+      })),
+    }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || 'Failed to get upload URLs');
+  }
+
+  return response.json();
+}
+
+async function uploadFileToS3(file: File, uploadUrl: string): Promise<void> {
+  const response = await fetch(uploadUrl, {
+    method: 'PUT',
+    body: file,
+    headers: {
+      'Content-Type': file.type,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to upload file: ${response.statusText}`);
+  }
+}
+
+async function removeBackgroundAPI(s3Keys: string[]): Promise<BackgroundRemovalResponse> {
   const response = await fetch('/api/models/bg-remover', {
     method: 'POST',
-    body: formData,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      s3Keys,
+    }),
   });
 
   if (!response.ok) {
@@ -77,7 +131,7 @@ export default function BackgroundRemover() {
   const { clearAuthCache, user, credits, invalidateCredits } = useAuth();
 
   const backgroundRemovalMutation = useMutation({
-    mutationFn: removeBackgroundAPI,
+    mutationFn: (s3Keys: string[]) => removeBackgroundAPI(s3Keys),
     onSuccess: (data) => {
       const results = Array.isArray(data.results) ? data.results : [data.results];
       setProcessedImages(
@@ -141,34 +195,76 @@ export default function BackgroundRemover() {
     }
 
     setShowCreditError(false);
-
     setProgress(0);
-    const formData = new FormData();
 
-    if (multipleMode) {
-      files.forEach(({ file }) => {
-        formData.append('images', file);
-      });
-    } else {
-      formData.append('image', files[0].file);
-    }
+    try {
+      // Step 1: Get upload URLs
+      const { uploadUrls } = await getUploadUrls(files.map((f) => f.file));
 
-    const progressInterval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 90) {
-          clearInterval(progressInterval);
-          return prev;
+      // Step 2: Update files with upload URLs and mark as uploading
+      setFiles((prev) =>
+        prev.map((file, index) => ({
+          ...file,
+          uploadUrl: uploadUrls[index]?.uploadUrl,
+          downloadUrl: uploadUrls[index]?.downloadUrl,
+          s3Key: uploadUrls[index]?.key,
+          uploading: true,
+          uploadError: undefined,
+        }))
+      );
+
+      // Step 3: Upload files to S3 in parallel
+      const uploadPromises = files.map(async (file, index) => {
+        const uploadUrl = uploadUrls[index]?.uploadUrl;
+        if (!uploadUrl) throw new Error(`No upload URL for file ${index}`);
+
+        try {
+          await uploadFileToS3(file.file, uploadUrl);
+          // Update file as uploaded
+          setFiles((prev) => prev.map((f, i) => (i === index ? { ...f, uploading: false } : f)));
+          return uploadUrls[index].key;
+        } catch (error) {
+          // Update file with error
+          setFiles((prev) =>
+            prev.map((f, i) =>
+              i === index
+                ? {
+                    ...f,
+                    uploading: false,
+                    uploadError: error instanceof Error ? error.message : 'Upload failed',
+                  }
+                : f
+            )
+          );
+          throw error;
         }
-        return prev + Math.random() * 10;
       });
-    }, 500);
 
-    backgroundRemovalMutation.mutate(formData, {
-      onSettled: () => {
-        clearInterval(progressInterval);
-      },
-    });
-  }, [files, multipleMode, backgroundRemovalMutation, credits]);
+      const s3Keys = await Promise.all(uploadPromises);
+      setProgress(50);
+
+      // Step 4: Process images using S3 keys
+      const progressInterval = setInterval(() => {
+        setProgress((prev) => {
+          if (prev >= 90) {
+            clearInterval(progressInterval);
+            return prev;
+          }
+          return prev + Math.random() * 10;
+        });
+      }, 500);
+
+      backgroundRemovalMutation.mutate(s3Keys, {
+        onSettled: () => {
+          clearInterval(progressInterval);
+        },
+      });
+    } catch (error) {
+      console.error('Upload error:', error);
+      setProgress(0);
+      // Handle upload errors here if needed
+    }
+  }, [files, backgroundRemovalMutation, credits]);
 
   const reset = useCallback(() => {
     files.forEach((f) => URL.revokeObjectURL(f.preview));
