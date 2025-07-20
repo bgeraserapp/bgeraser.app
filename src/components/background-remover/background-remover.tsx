@@ -130,6 +130,24 @@ export default function BackgroundRemover() {
   const [showCreditError, setShowCreditError] = useState(false);
   const { clearAuthCache, user, credits, invalidateCredits } = useAuth();
 
+  const uploadUrlMutation = useMutation({
+    mutationFn: (files: File[]) => getUploadUrls(files),
+    onError: (error: Error) => {
+      console.error('Upload URL generation error:', error);
+      setProgress(0);
+    },
+  });
+
+  const fileUploadMutation = useMutation({
+    mutationFn: async ({ file, uploadUrl }: { file: File; uploadUrl: string }) => {
+      await uploadFileToS3(file, uploadUrl);
+    },
+    onError: (error: Error) => {
+      console.error('File upload error:', error);
+      setProgress(0);
+    },
+  });
+
   const backgroundRemovalMutation = useMutation({
     mutationFn: (s3Keys: string[]) => removeBackgroundAPI(s3Keys),
     onSuccess: (data) => {
@@ -198,8 +216,9 @@ export default function BackgroundRemover() {
     setProgress(0);
 
     try {
-      // Step 1: Get upload URLs
-      const { uploadUrls } = await getUploadUrls(files.map((f) => f.file));
+      // Step 1: Get upload URLs using mutation
+      setProgress(10);
+      const { uploadUrls } = await uploadUrlMutation.mutateAsync(files.map((f) => f.file));
 
       // Step 2: Update files with upload URLs and mark as uploading
       setFiles((prev) =>
@@ -213,13 +232,15 @@ export default function BackgroundRemover() {
         }))
       );
 
-      // Step 3: Upload files to S3 in parallel
+      setProgress(20);
+
+      // Step 3: Upload files to S3 in parallel using mutations
       const uploadPromises = files.map(async (file, index) => {
         const uploadUrl = uploadUrls[index]?.uploadUrl;
         if (!uploadUrl) throw new Error(`No upload URL for file ${index}`);
 
         try {
-          await uploadFileToS3(file.file, uploadUrl);
+          await fileUploadMutation.mutateAsync({ file: file.file, uploadUrl });
           // Update file as uploaded
           setFiles((prev) => prev.map((f, i) => (i === index ? { ...f, uploading: false } : f)));
           return uploadUrls[index].key;
@@ -264,7 +285,7 @@ export default function BackgroundRemover() {
       setProgress(0);
       // Handle upload errors here if needed
     }
-  }, [files, backgroundRemovalMutation, credits]);
+  }, [files, backgroundRemovalMutation, uploadUrlMutation, fileUploadMutation, credits]);
 
   const reset = useCallback(() => {
     files.forEach((f) => URL.revokeObjectURL(f.preview));
@@ -336,8 +357,14 @@ export default function BackgroundRemover() {
                   onReset={reset}
                   multipleMode={multipleMode}
                   isProcessing={backgroundRemovalMutation.isPending}
+                  isUploadingUrls={uploadUrlMutation.isPending}
+                  isUploadingFiles={fileUploadMutation.isPending}
                   progress={progress}
-                  error={backgroundRemovalMutation.error?.message}
+                  error={
+                    backgroundRemovalMutation.error?.message ||
+                    uploadUrlMutation.error?.message ||
+                    fileUploadMutation.error?.message
+                  }
                   credits={credits}
                 />
               </div>

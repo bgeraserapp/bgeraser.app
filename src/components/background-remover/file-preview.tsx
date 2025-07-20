@@ -14,6 +14,11 @@ interface UploadedFile {
   file: File;
   preview: string;
   id: string;
+  s3Key?: string;
+  uploadUrl?: string;
+  downloadUrl?: string;
+  uploading?: boolean;
+  uploadError?: string;
 }
 
 interface FilePreviewProps {
@@ -23,6 +28,8 @@ interface FilePreviewProps {
   onReset: () => void;
   multipleMode: boolean;
   isProcessing: boolean;
+  isUploadingUrls?: boolean;
+  isUploadingFiles?: boolean;
   progress: number;
   error?: string;
   credits?: number;
@@ -35,6 +42,8 @@ export function FilePreview({
   onReset,
   multipleMode,
   isProcessing,
+  isUploadingUrls = false,
+  isUploadingFiles = false,
   progress,
   error,
   credits = 0,
@@ -88,63 +97,120 @@ export function FilePreview({
               : 'flex justify-center'
           )}
         >
-          {files.map(({ file, preview, id }, index) => (
-            <div
-              key={id}
-              className={cn(
-                'relative group animate-in fade-in-0 duration-300 hover:scale-105 transition-all',
-                !multipleMode && 'w-full max-w-xs'
-              )}
-              style={{ animationDelay: `${index * 50}ms` }}
-            >
+          {files.map((uploadedFile, index) => {
+            const { file, preview, id, uploading, uploadError } = uploadedFile;
+            return (
               <div
+                key={id}
                 className={cn(
-                  'rounded-md overflow-hidden border shadow-md hover:shadow-lg transition-all duration-200',
-                  multipleMode ? 'aspect-square' : 'aspect-[4/3]',
-                  'border-border'
+                  'relative group animate-in fade-in-0 duration-300 hover:scale-105 transition-all',
+                  !multipleMode && 'w-full max-w-xs'
                 )}
+                style={{ animationDelay: `${index * 50}ms` }}
               >
-                <img
-                  src={preview || '/placeholder.svg'}
-                  alt={file.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-              </div>
+                <div
+                  className={cn(
+                    'rounded-md overflow-hidden border shadow-md hover:shadow-lg transition-all duration-200',
+                    multipleMode ? 'aspect-square' : 'aspect-[4/3]',
+                    uploading
+                      ? 'border-primary'
+                      : uploadError
+                        ? 'border-destructive'
+                        : 'border-border'
+                  )}
+                >
+                  <img
+                    src={preview || '/placeholder.svg'}
+                    alt={file.name}
+                    className={cn(
+                      'w-full h-full object-cover transition-transform duration-300',
+                      uploading ? 'opacity-75' : 'group-hover:scale-105'
+                    )}
+                  />
 
-              <Button
-                size="icon"
-                variant="destructive"
-                onClick={() => removeFile(id)}
-                className="absolute -top-0.5 -right-0.5 w-5 h-5 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-md hover:scale-105"
-              >
-                <X className="h-2.5 w-2.5" />
-              </Button>
+                  {/* Upload status overlay */}
+                  {uploading && (
+                    <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                      <div className="bg-white/90 rounded-full p-1">
+                        <Loader2 className="h-3 w-3 animate-spin text-primary" />
+                      </div>
+                    </div>
+                  )}
 
-              {!multipleMode && (
-                <div className="mt-1">
-                  <p className="text-xs font-medium text-gray-900 dark:text-white truncate">
-                    {file.name}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {(file.size / (1024 * 1024)).toFixed(1)}MB
-                  </p>
+                  {uploadError && (
+                    <div className="absolute inset-0 bg-destructive/20 flex items-center justify-center">
+                      <div className="bg-white/90 rounded-full p-1">
+                        <X className="h-3 w-3 text-destructive" />
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          ))}
+
+                <Button
+                  size="icon"
+                  variant="destructive"
+                  onClick={() => removeFile(id)}
+                  disabled={uploading}
+                  className="absolute -top-0.5 -right-0.5 w-5 h-5 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-md hover:scale-105 disabled:opacity-50"
+                >
+                  <X className="h-2.5 w-2.5" />
+                </Button>
+
+                {!multipleMode && (
+                  <div className="mt-1">
+                    <p className="text-xs font-medium text-gray-900 dark:text-white truncate">
+                      {file.name}
+                    </p>
+                    <div className="flex justify-between items-center">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {(file.size / (1024 * 1024)).toFixed(1)}MB
+                      </p>
+                      {uploading && (
+                        <p className="text-xs text-primary font-medium">Uploading...</p>
+                      )}
+                      {uploadError && (
+                        <p className="text-xs text-destructive font-medium">Failed</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         {/* Compact Action Buttons */}
         <div className="flex gap-1.5">
           <Button
             onClick={onProcessImages}
-            disabled={isProcessing || credits < files.length}
+            disabled={
+              isProcessing ||
+              isUploadingUrls ||
+              isUploadingFiles ||
+              credits < files.length ||
+              files.some((f) => f.uploading || f.uploadError)
+            }
             className="flex-1 hover:opacity-90 text-primary-foreground shadow-md hover:shadow-lg transition-all duration-200 h-8 disabled:opacity-50 text-xs"
           >
-            {isProcessing ? (
+            {isUploadingUrls ? (
+              <>
+                <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                Getting URLs...
+              </>
+            ) : isUploadingFiles || files.some((f) => f.uploading) ? (
+              <>
+                <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                Uploading...
+              </>
+            ) : isProcessing ? (
               <>
                 <Loader2 className="h-3 w-3 animate-spin mr-1" />
                 Processing...
+              </>
+            ) : files.some((f) => f.uploadError) ? (
+              <>
+                <X className="h-3 w-3 mr-1" />
+                Upload Failed
               </>
             ) : credits < files.length ? (
               <>
@@ -169,14 +235,23 @@ export function FilePreview({
         </div>
 
         {/* Compact Progress Bar */}
-        {isProcessing && (
+        {(isProcessing ||
+          isUploadingUrls ||
+          isUploadingFiles ||
+          files.some((f) => f.uploading)) && (
           <div className="space-y-1 animate-in fade-in-0 duration-200">
             <div className="relative">
               <Progress value={progress} className="h-1.5" />
               <div className="absolute inset-0 bg-gradient-primary rounded-full opacity-20 animate-pulse" />
             </div>
             <div className="flex justify-between items-center text-xs">
-              <span className="text-muted-foreground">Processing...</span>
+              <span className="text-muted-foreground">
+                {isUploadingUrls
+                  ? 'Getting upload URLs...'
+                  : isUploadingFiles || files.some((f) => f.uploading)
+                    ? 'Uploading files...'
+                    : 'Processing...'}
+              </span>
               <span className="font-semibold text-primary">{Math.round(progress)}%</span>
             </div>
           </div>
