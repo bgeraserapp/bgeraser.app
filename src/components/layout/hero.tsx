@@ -9,7 +9,7 @@ import { env } from '@/env';
 
 export function Hero() {
   return (
-    <section className="relative py-20 lg:py-32 overflow-hidden">
+    <section className="relative py-20 lg:py-32 overflow-hidden border bg-accent">
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5" />
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
@@ -44,7 +44,12 @@ export function Hero() {
         </div>
 
         {/* Demo Images Section */}
-        <div className="max-w-5xl mx-auto">
+        <div
+          className="max-w-5xl mx-auto"
+          style={{
+            display: 'none',
+          }}
+        >
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Portrait Demo */}
             <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300">

@@ -9,7 +9,7 @@ import AppConfig from '@/lib/app-config';
 const footerLinks = [
   { name: 'Features', href: '#features' },
   { name: 'Pricing', href: '/pricing' },
-  { name: 'Documentation', href: env.NEXT_PUBLIC_DOCS_URL },
+  // { name: 'Documentation', href: env.NEXT_PUBLIC_DOCS_URL },
   { name: 'Privacy Policy', href: '/privacy' },
   { name: 'Terms of Service', href: '/terms' },
   { name: 'Refund Policy', href: '/refund-policy' },

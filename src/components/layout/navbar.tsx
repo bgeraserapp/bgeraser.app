@@ -39,12 +39,12 @@ export function Navbar() {
               >
                 Pricing
               </Link>
-              <Link
-                href={env.NEXT_PUBLIC_DOCS_URL}
-                className="text-foreground hover:text-foreground px-3 py-2 text-sm font-medium transition-colors"
-              >
-                Docs
-              </Link>
+              {/* <Link
+                  href={env.NEXT_PUBLIC_DOCS_URL}
+                  className="text-foreground hover:text-foreground px-3 py-2 text-sm font-medium transition-colors"
+                >
+                  Docs
+                </Link> */}
             </div>
           </div>
 
