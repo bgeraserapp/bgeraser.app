@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowRight, Sparkles, Zap } from 'lucide-react';
+import { ArrowRight, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
@@ -36,10 +36,10 @@ export function Hero() {
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
-            <Button variant="outline" size="lg" className="text-lg px-8 py-3">
+            {/* <Button variant="outline" size="lg" className="text-lg px-8 py-3">
               <Zap className="mr-2 h-5 w-5" />
               View Demo
-            </Button>
+            </Button> */}
           </div>
         </div>
 
